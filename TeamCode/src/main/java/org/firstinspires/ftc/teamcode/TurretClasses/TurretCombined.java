@@ -16,7 +16,7 @@ public class TurretCombined {
     public double extendSpeed, rotateSpeed, vPivotSpeed;
     double extendEncoderTickPerIn = 53,vPivotEncoder1Degree = 23 ;
     public double vPivotPM, vPivotDM, vPivotUpPm = .028, vPivotDnPM = .018, vPivotUpDM = .02, vPivotDnDM = .015;
-    public double extendPM = .015, extendDM = 0.012;
+    public double extendPM = .018, extendDM = 0.01;
     public double rotatePM = .0003, rotateDM = 0.0003;
     double extendSpeedDifference, rotateSpeedDifference, vPivotSpeedDifference;
     double extendLastSpeedDifference = 0, rotateLastSpeedDifference = 0, vPivotLastSpeedDifference = 0;
@@ -96,8 +96,8 @@ public class TurretCombined {
         }else {
 
             //setpoint limits
-            if (ExtendSet > 1290) {
-                extendSet = 1290;
+            if (ExtendSet > 1000) {
+                extendSet = 1000;
             } else {
                 extendSet = ExtendSet;
             }
