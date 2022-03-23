@@ -50,7 +50,7 @@ public class TurretCombined {
             //vPivot Homing
             if(vPivotIsHomed == false){
                 vPivotSet = 3000;
-                vPivotSpeedSet = 10;
+                vPivotSpeedSet = 5;
             }
             if(VPivotMag == false && lastVPivotMag == true){
                 vPivotModifiedEncoder = 1600;
@@ -246,6 +246,29 @@ public class TurretCombined {
         lastVPivotMag = VPivotMag;
 
 
+
+    }
+
+    double VPIVOTMIN;
+    double Y_INT = 980;
+    public double VPivotLimits(double extendSet, double vpivotSet, double rotateset, boolean yintreset){
+        if(yintreset){
+            Y_INT = (2.2 * vpivotSet) - extendSet;
+        }
+
+        VPIVOTMIN = (extendSet + Y_INT)/2.2;
+
+        if(extendSet < 110 && rotateset < 100 && rotateset > -100){
+            if(vpivotSet < 900){
+                return 900;
+            }else{
+                return vpivotSet;
+            }
+        }else if(VPIVOTMIN > vpivotSet){
+            return VPIVOTMIN;
+        }else{
+            return vpivotSet;
+        }
 
     }
 }

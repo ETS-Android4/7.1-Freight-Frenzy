@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.GeneralRobotCode.OpenCVTestFolder;
 
-import static org.opencv.core.Core.compare;
 import static org.opencv.core.Core.inRange;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -8,32 +7,23 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.checkerframework.checker.units.qual.A;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-import org.opencv.videoio.Videoio;
-
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 @Autonomous
-public class OpenCV_Masking_Original extends LinearOpMode {
+public class Cube_Detection extends LinearOpMode {
 
     // Define Webcam
     OpenCvCamera webcam;
@@ -46,7 +36,7 @@ public class OpenCV_Masking_Original extends LinearOpMode {
 
         // Set up webcam
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "LeftCam"), cameraMonitorViewId);
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "TurretCam1"), cameraMonitorViewId);
 
         // Set up pipeline
         pipeline = new OpenCV_Pipeline();
@@ -65,6 +55,8 @@ public class OpenCV_Masking_Original extends LinearOpMode {
             @Override
             public void onError(int errorCode)
             {
+                telemetry.addData("cameraNotOpened", 0);
+                telemetry.update();
                 /*
                  * This will be called if the camera could not be opened
                  */
@@ -80,8 +72,16 @@ public class OpenCV_Masking_Original extends LinearOpMode {
             // Telemetry readings for the HSV values in each region
 //            telemetry.addData("Region 1", "%7d, %7d, %7d", pipeline.RGB_Value[0], pipeline.RGB_Value[1], pipeline.RGB_Value[2]);
 
+            telemetry.addData("targetX", pipeline.targetX);
+            telemetry.addData("targetY", pipeline.targetY);
+            telemetry.addData("targetWidth", pipeline.targetWidth);
+            telemetry.addData("target Area", pipeline.targetArea);
+
             telemetry.update();
         }
+        webcam.stopStreaming();
+        webcam.closeCameraDevice();
+
     }
 
 
@@ -95,6 +95,9 @@ public class OpenCV_Masking_Original extends LinearOpMode {
         static final Scalar CYAN = new Scalar(0, 139, 139);
         static final Scalar WHITE = new Scalar(255, 255, 255);
 
+        int indexLowest; double yLowest = -10;
+        double targetX; double targetY; double targetWidth; double targetArea;
+        double cubeCenter = 320;
         // Create a Mat object that will hold the color data
         
         Rect yellowMask;
@@ -119,18 +122,19 @@ public class OpenCV_Masking_Original extends LinearOpMode {
         @Override
         public Mat processFrame(Mat input) {
 
-            Mat YCrCb = new Mat(input.rows(), input.cols(), input.type());
+            Mat YCrCb = new Mat();
+            Mat HSV = new Mat();
 
-            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+            Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
 
-            Scalar scalarLowerYCrCb = new Scalar(0.0, 150.0, 120.0);
-            Scalar scalarUpperYCrCb = new Scalar(255.0, 255.0, 255.0);
+            Scalar scalarLowerYCrCb = new Scalar(  10.0, 160.0, 160);
+            Scalar scalarUpperYCrCb = new Scalar(25.0, 255.0, 255.0);
             Mat maskRed = new Mat();
 
 
-
-            inRange(YCrCb, scalarLowerYCrCb, scalarUpperYCrCb, maskRed);
-
+            //inRange(HSV, lowYellow, highYellow, maskYellow);
+            //inRange(HSV, lowWhite, highWhite, maskWhite);
+            inRange(HSV, scalarLowerYCrCb, scalarUpperYCrCb, maskRed);
 
 //            Core.inRange();
 
@@ -138,42 +142,51 @@ public class OpenCV_Masking_Original extends LinearOpMode {
             whiteContours.clear();
             redContours.clear();
 
-         /*   Imgproc.findContours(maskYellow, yellowContours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-            Imgproc.drawContours(input, yellowContours, -1, CRIMSON); //input
-
-            Imgproc.findContours(maskWhite, whiteContours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-            Imgproc.drawContours(input, whiteContours, -1, AQUA); //input*/
 
             Imgproc.findContours(maskRed, redContours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-            Imgproc.drawContours(input, redContours, -1, AQUA);
+            Imgproc.drawContours(input, redContours, -1, AQUA); //input
 
-            for (int i = 0; i < yellowContours.size(); i++){
-                if (filterContours(yellowContours.get(i))){
-                    yellowMask = Imgproc.boundingRect(yellowContours.get(i));
-                    Imgproc.rectangle(input, yellowMask, CRIMSON, 2);
+
+            yLowest = -640;
+            indexLowest = 0;
+
+            if(redContours.size() > 0){
+                for (int i = 0; i < redContours.size(); i++){
+                    if (filterContours(redContours.get(i))){
+                        redMask = Imgproc.boundingRect(redContours.get(i));
+                        Imgproc.rectangle(input, redMask, AQUA, 2);
+
+                        if(redMask.y > yLowest){
+                            indexLowest = i;
+                            yLowest = redMask.y;
+                        }
+                    }
                 }
+                redMask = Imgproc.boundingRect(redContours.get(indexLowest));
+                Imgproc.rectangle(input, redMask, GOLD, -5);
+                targetX = redMask.x;
+                targetY = redMask.y;
+                targetWidth = redMask.width;
+                targetArea = redMask.height * redMask.width;
+                cubeCenter = targetX + (targetWidth/2);
+
+            }else{
+                targetX = -1;
+                targetY = -1;
+                targetWidth = -1;
+                targetArea = -1;
+
             }
 
-            for (int i = 0; i < redContours.size(); i++){
-                if (filterContours(redContours.get(i))){
-                    redMask = Imgproc.boundingRect(redContours.get(i));
-                    Imgproc.rectangle(input, redMask, CRIMSON, 2);
-                }
-            }
 
-           /* for (int i = 0; i < whiteContours.size(); i++){
-                if (filterContours(whiteContours.get(i))){
-                    whiteMask = Imgproc.boundingRect(whiteContours.get(i));
-                    Imgproc.rectangle(input, whiteMask, AQUA, 2);
-                }
-            }*/
-            //yellowMask = Imgproc.boundingRect(maskYellow);
-            //Imgproc.rectangle(input, yellowMask, GOLD, 2); // input
-            //whiteMask = Imgproc.boundingRect(maskWhite);
-            //Imgproc.rectangle(input, whiteMask, PARAKEET, 2); // input
 
-            maskRed.release();
+
+
             YCrCb.release();
+            HSV.release();
+            maskRed.release();
+
+
             return input;
         }
     }

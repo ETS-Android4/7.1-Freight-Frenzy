@@ -73,12 +73,12 @@ public class NewCarouselBlueTeleOp extends LinearOpMode{
 
 
 
-                if(gamepad1.a || gamepad2.a){//intake
+                if(gamepad1.a || gamepad2.a || gamepad1.left_trigger > .05){//intake
                     robot.RI_S.setPower(-.5);
                     robot.LI_S.setPower(.5);
-                }else if(gamepad1.b || gamepad2.b){//outtake
-                    robot.RI_S.setPower(.3);
-                    robot.LI_S.setPower(-.3);
+                }else if(gamepad1.b || gamepad2.b || gamepad1.left_bumper){//outtake
+                    robot.RI_S.setPower(.4);
+                    robot.LI_S.setPower(-.4);
                 }else{//servos off
                     robot.RI_S.setPower(0);
                     robot.LI_S.setPower(0);
@@ -127,12 +127,12 @@ public class NewCarouselBlueTeleOp extends LinearOpMode{
                     if (CombinedTurret.vPivotModifiedEncoder > 1000) {
                         teleOpRotateSet = intakeRotateSet + 1300;
                         if(CombinedTurret.rotateModifiedEncoder > 700) {
-                            teleOpExtendSet = 900;
+                            teleOpExtendSet = 800;
                         }
                     }
 
                 } else{//manual turret position setting
-                    teleOpExtendSet = teleOpExtendSet - (gamepad2.right_stick_y * 50);
+                    teleOpExtendSet = teleOpExtendSet - Smoothing.SmoothExtend(gamepad2.right_stick_y * 30);
                     if(gamepad2.right_trigger > .05){
                         teleOpRotateSet = teleOpRotateSet + (gamepad2.right_trigger * 40);
                     }else if(gamepad2.left_trigger > .05){
@@ -142,7 +142,7 @@ public class NewCarouselBlueTeleOp extends LinearOpMode{
                     teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -30);
 
                 }
-            if(gamepad2.right_bumper || gamepad2.left_bumper || gamepad1.left_bumper) {
+            if(gamepad2.right_bumper || gamepad2.left_bumper) {
                 teleOpVPivotSet = 2550;
                 if(CombinedTurret.vPivotModifiedEncoder > 800){
                     teleOpExtendSet = 0;
@@ -207,23 +207,23 @@ public class NewCarouselBlueTeleOp extends LinearOpMode{
     public void Telemetry(){
 
       //  dashboardTelemetry.addData("vPivotMotor Power", CombinedTurret.vPivotFinalMotorPower);
-      //  dashboardTelemetry.addData("vPivot Modified Encoder", CombinedTurret.vPivotModifiedEncoder);
-
+        dashboardTelemetry.addData("vPivot Modified Encoder", CombinedTurret.vPivotModifiedEncoder);
+        dashboardTelemetry.addData("Rotate Modified Encoder", CombinedTurret.rotateModifiedEncoder);
       //  dashboardTelemetry.addData("extend Motor Power", CombinedTurret.extendFinalMotorPower);
       //  dashboardTelemetry.addData("extend speed", CombinedTurret.extendSpeed);
-      //  dashboardTelemetry.addData("extend Modified Encoder", CombinedTurret.extendModifiedEncoder);
+        dashboardTelemetry.addData("extend Modified Encoder", CombinedTurret.extendModifiedEncoder);
       //  dashboardTelemetry.addData("extend Set", CombinedTurret.extendSet);
       //  dashboardTelemetry.addData("turret Homing trigger", CombinedTurret.turretHomingTrigger);
 
-        telemetry.addData("intake Dist", robot.I_DS.getDistance(DistanceUnit.INCH));
-        telemetry.addData("rotate set", CombinedTurret.rotateSet);
+        //telemetry.addData("intake Dist", robot.I_DS.getDistance(DistanceUnit.INCH));
+        //telemetry.addData("rotate set", CombinedTurret.rotateSet);
         telemetry.addData("VPivot Mod Encoder", CombinedTurret.vPivotModifiedEncoder);
         telemetry.addData("extend Mod Encoder", CombinedTurret.extendModifiedEncoder);
         telemetry.addData("rotate mod encoder", CombinedTurret.rotateModifiedEncoder);
-        telemetry.addData("rotate RAW Encoder", robot.TR_M.getCurrentPosition());
-        telemetry.addData("carousel timer", getRuntime() - timeStart);
-        dashboardTelemetry.addData("carousel Speed", ((robot.TC_M.getCurrentPosition() - lastCarouselE)/(getRuntime() - lastTime)));
-        dashboardTelemetry.addData("carosel motor", CarouselMotor);
+        //telemetry.addData("rotate RAW Encoder", robot.TR_M.getCurrentPosition());
+        //telemetry.addData("carousel timer", getRuntime() - timeStart);
+        //dashboardTelemetry.addData("carousel Speed", ((robot.TC_M.getCurrentPosition() - lastCarouselE)/(getRuntime() - lastTime)));
+        //dashboardTelemetry.addData("carosel motor", CarouselMotor);
 
 
         dashboardTelemetry.update();

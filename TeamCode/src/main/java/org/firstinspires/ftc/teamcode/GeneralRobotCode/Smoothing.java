@@ -189,4 +189,38 @@ public class Smoothing {
         return RotateTotal/5;
 
     }
+
+    double ExtendTotal;
+    int ExtendArrayNum = 0, ExtendfirstLoop = 0;
+    double ExtendArray[] = new double[7];
+
+    public double SmoothExtend(double input){
+        if(ExtendfirstLoop == 0) {
+            ExtendfirstLoop = 1;
+            for (int ExtendInitialSet = 0; ExtendInitialSet < 5; ExtendInitialSet++) {
+                ExtendArray[ExtendInitialSet] = 0;
+            }
+        }
+        ExtendTotal = ExtendTotal - ExtendArray[ExtendArrayNum];
+
+        ExtendArray[ExtendArrayNum] = input;
+
+        ExtendTotal = ExtendTotal + ExtendArray[ExtendArrayNum];
+
+
+        ExtendArrayNum = ExtendArrayNum + 1;
+        if(ExtendArrayNum >= 5){
+            ExtendArrayNum = 0;
+        }
+
+        if(Math.abs(input) < .08){
+            for (int ExtendInitialSet = 0; ExtendInitialSet < 7; ExtendInitialSet++) {
+                ExtendArray[ExtendInitialSet] = 0;
+            }
+            ExtendTotal = 0;
+        }
+
+        return ExtendTotal/5;
+
+    }
 }
