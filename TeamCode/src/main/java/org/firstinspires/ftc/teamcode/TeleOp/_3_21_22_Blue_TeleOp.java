@@ -64,10 +64,10 @@ public class _3_21_22_Blue_TeleOp extends LinearOpMode{
                 robot.RF_M.setPower(.4*(-((y)+x-(z))));//RF
                 robot.RB_M.setPower(.4*(-((y)-x-(z))));//RB
             }else{
-                robot.LF_M.setPower(((y)-x+(.8*z)));//LF
-                robot.LB_M.setPower(((y)+x+(.8*z)));//LB
-                robot.RF_M.setPower((-((y)+x-(.8*z))));//RF
-                robot.RB_M.setPower((-((y)-x-(.8*z))));//RB
+                robot.LF_M.setPower(((y)-x+(.9*z)));//LF
+                robot.LB_M.setPower(((y)+x+(.9*z)));//LB
+                robot.RF_M.setPower((-((y)+x-(.9*z))));//RF
+                robot.RB_M.setPower((-((y)-x-(.9*z))));//RB
             }
 
             //intaking/outtaking/off
@@ -92,7 +92,7 @@ public class _3_21_22_Blue_TeleOp extends LinearOpMode{
                 }else if(gamepad2.dpad_right || gamepad1.dpad_right) {//Alliance hub dropping preset
                     teleOpVPivotSet = 1600;
                     if (CombinedTurret.vPivotModifiedEncoder > 1000) {
-                        teleOpRotateSet = intakeRotateSet + 1300;
+                        teleOpRotateSet = intakeRotateSet + 940;
                         if(CombinedTurret.rotateModifiedEncoder > 700) {
                             teleOpExtendSet = 1200;
                         }
@@ -122,7 +122,7 @@ public class _3_21_22_Blue_TeleOp extends LinearOpMode{
                 }else if(gamepad2.dpad_up || gamepad1.dpad_up){//Mid alliance hub scoring position
                     teleOpVPivotSet = 1260;
                     if (CombinedTurret.vPivotModifiedEncoder > 1000) {
-                        teleOpRotateSet = intakeRotateSet + 1300;
+                        teleOpRotateSet = intakeRotateSet + 940;
                         if(CombinedTurret.rotateModifiedEncoder > 700) {
                             teleOpExtendSet = 800;
                         }

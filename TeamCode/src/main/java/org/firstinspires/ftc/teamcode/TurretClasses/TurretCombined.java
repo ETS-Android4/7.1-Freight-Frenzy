@@ -12,12 +12,12 @@ public class TurretCombined {
     public double extendDeltaEncoder, extendModifiedEncoder, rotateDeltaEncoder, rotateModifiedEncoder, vPivotDeltaEncoder, vPivotModifiedEncoder;
     double extendLastEncoder, rotateLastEncoder, vPivotLastEncoder;
     double extendDirection, rotateDirection, vPivotDirection;
-    double extendSpeedSet, rotateSpeedSet, vPivotSpeedSet;
+    public double extendSpeedSet, rotateSpeedSet, vPivotSpeedSet;
     public double extendSpeed, rotateSpeed, vPivotSpeed;
     double extendEncoderTickPerIn = 53,vPivotEncoder1Degree = 23 ;
     public double vPivotPM, vPivotDM, vPivotUpPm = .028, vPivotDnPM = .018, vPivotUpDM = .02, vPivotDnDM = .015;
     public double extendPM = .018, extendDM = 0.01;
-    public double rotatePM = .0003, rotateDM = 0.0003;
+    public double rotatePM = .00009, rotateDM = 0.00012;
     double extendSpeedDifference, rotateSpeedDifference, vPivotSpeedDifference;
     double extendLastSpeedDifference = 0, rotateLastSpeedDifference = 0, vPivotLastSpeedDifference = 0;
     public double extendFinalMotorPower = 0, rotateFinalMotorPower = 0, vPivotFinalMotorPower = 0;
@@ -164,9 +164,10 @@ public class TurretCombined {
             extendSpeedSet = extendSpeedSet * (Math.abs(extendSet - extendModifiedEncoder)/Math.abs(ExtendSpeedSet * 10));
         }
 
-        if(Math.abs(rotateSet - rotateModifiedEncoder) < Math.abs(rotateSpeedSet/5)){
-            rotateSpeedSet = rotateSpeedSet * Math.abs((rotateSet - rotateModifiedEncoder)/Math.abs(rotateSpeedSet/5));
-        }else if( Math.abs(rotateSet - rotateModifiedEncoder) < 10){
+        if(Math.abs(Math.abs(rotateSet) - Math.abs(rotateModifiedEncoder)) < Math.abs(rotateSpeedSet/3)){
+            rotateSpeedSet = rotateSpeedSet * (Math.abs((rotateSet - rotateModifiedEncoder)/Math.abs(rotateSpeedSet/3)));
+        }
+        if( Math.abs(rotateSet - rotateModifiedEncoder) < 1){
             rotateSpeedSet = 0;
         }
 

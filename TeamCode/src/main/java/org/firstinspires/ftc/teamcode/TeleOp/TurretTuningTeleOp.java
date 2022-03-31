@@ -23,9 +23,9 @@ public class TurretTuningTeleOp extends LinearOpMode{
     public static double DNDM = .015;
     public static double EXTENDSPEED = 20;
     public static double EXTENDP = .015;
-    public static double EXTENDD = 0.012;
-    public static double ROTATEP = 0.0003;
-    public static double ROTATED = 0.0003;
+    public static double EXTENDD = 0.01;
+    public static double ROTATEP = 0.0001;
+    public static double ROTATED = 0.0001;
     public static double EXTENDSET = 300;
     public static double VPIVOTSPEEDSET = 16;
     public static double VPIVOTSETPOINT = 1500;
@@ -48,7 +48,7 @@ public class TurretTuningTeleOp extends LinearOpMode{
     @Override
     public void runOpMode(){
         robot.init(hardwareMap);
-        CombinedTurret.turretHomingTrigger = false;
+        CombinedTurret.turretHomingTrigger = true;
 
 
         waitForStart();
@@ -69,8 +69,8 @@ public class TurretTuningTeleOp extends LinearOpMode{
             CombinedTurret.TurretCombinedMethod(EXTENDSET,EXTENDSPEED,ROTATESET,ROTATESPEED, VPIVOTSETPOINT,VPIVOTSPEEDSET, robot.TE_M.getCurrentPosition(), robot.TE_G.getState(), robot.TR_M.getCurrentPosition(), robot.TR_G.getState(), robot.TP_M.getCurrentPosition(), robot.TP_G.getState());
 
             robot.TE_M.setPower(CombinedTurret.extendFinalMotorPower);
-            //robot.TR_M.setPower(CombinedTurret.rotateFinalMotorPower);
-           // robot.TP_M.setPower(CombinedTurret.vPivotFinalMotorPower);
+            robot.TR_M.setPower(CombinedTurret.rotateFinalMotorPower);
+            robot.TP_M.setPower(CombinedTurret.vPivotFinalMotorPower);
 
             x = Smoothing.SmoothDriveX(-Math.copySign(gamepad1.left_stick_x, gamepad1.left_stick_x * gamepad1.left_stick_x * gamepad1.left_stick_x));
             y = Smoothing.SmoothDriveY( -(Math.copySign(gamepad1.left_stick_y, gamepad1.left_stick_y * gamepad1.left_stick_y * gamepad1.left_stick_y)));
@@ -135,6 +135,8 @@ public class TurretTuningTeleOp extends LinearOpMode{
         dashboardTelemetry.addData("rotate Speed", CombinedTurret.rotateSpeed);
         dashboardTelemetry.addData("roate Motor Power", CombinedTurret.rotateFinalMotorPower);
         dashboardTelemetry.addData("vPivot Speed", CombinedTurret.vPivotSpeed);
+        dashboardTelemetry.addData("rotate Mod Encoder", CombinedTurret.rotateModifiedEncoder);
+        dashboardTelemetry.addData("rotate SPeed Set", CombinedTurret.rotateSpeedSet);
 
 
         dashboardTelemetry.update();

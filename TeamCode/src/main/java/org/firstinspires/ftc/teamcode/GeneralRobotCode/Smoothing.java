@@ -124,12 +124,12 @@ public class Smoothing {
 
     double DriveZTotal;
     int DriveZArrayNum = 0, DriveZfirstLoop = 0;
-    double DriveZArray[] = new double[3];
+    double DriveZArray[] = new double[9];
 
     public double SmoothDriveZ(double input){
         if(DriveZfirstLoop == 0) {
             DriveZfirstLoop = 1;
-            for (int DriveZInitialSet = 0; DriveZInitialSet < 3; DriveZInitialSet++) {
+            for (int DriveZInitialSet = 0; DriveZInitialSet < 9; DriveZInitialSet++) {
                 DriveZArray[DriveZInitialSet] = 0;
             }
         }
@@ -141,7 +141,7 @@ public class Smoothing {
 
 
         DriveZArrayNum = DriveZArrayNum + 1;
-        if(DriveZArrayNum >= 3){
+        if(DriveZArrayNum >= 9){
             DriveZArrayNum = 0;
         }
 
