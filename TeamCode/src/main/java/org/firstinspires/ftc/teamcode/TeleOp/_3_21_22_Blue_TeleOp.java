@@ -64,10 +64,10 @@ public class _3_21_22_Blue_TeleOp extends LinearOpMode{
                 robot.RF_M.setPower(.4*(-((y)+x-(z))));//RF
                 robot.RB_M.setPower(.4*(-((y)-x-(z))));//RB
             }else{
-                robot.LF_M.setPower(((y)-x+(.9*z)));//LF
-                robot.LB_M.setPower(((y)+x+(.9*z)));//LB
-                robot.RF_M.setPower((-((y)+x-(.9*z))));//RF
-                robot.RB_M.setPower((-((y)-x-(.9*z))));//RB
+                robot.LF_M.setPower(((y)-x+(.75*z)));//LF
+                robot.LB_M.setPower(((y)+x+(.75*z)));//LB
+                robot.RF_M.setPower((-((y)+x-(.75*z))));//RF
+                robot.RB_M.setPower((-((y)-x-(.75*z))));//RB
             }
 
             //intaking/outtaking/off
@@ -92,9 +92,9 @@ public class _3_21_22_Blue_TeleOp extends LinearOpMode{
                 }else if(gamepad2.dpad_right || gamepad1.dpad_right) {//Alliance hub dropping preset
                     teleOpVPivotSet = 1600;
                     if (CombinedTurret.vPivotModifiedEncoder > 1000) {
-                        teleOpRotateSet = intakeRotateSet + 940;
-                        if(CombinedTurret.rotateModifiedEncoder > 700) {
-                            teleOpExtendSet = 1200;
+                        teleOpRotateSet = intakeRotateSet + 1880;
+                        if(CombinedTurret.rotateModifiedEncoder > 1000) {
+                            teleOpExtendSet = 950;
                         }
                     }
                 }else if(gamepad2.dpad_down || gamepad1.dpad_down) {//Intake position
@@ -162,22 +162,21 @@ public class _3_21_22_Blue_TeleOp extends LinearOpMode{
                 oneLoop = false;
             }
 
+            if(gamepad1.y){
+                controllerY = true;
+            }else if(gamepad2.y){
+                controllerY = true;
+            }else{
+                controllerY = false;
+            }
+
+
 
 
             if(gamepad1.x || gamepad2.x){ //bypassing limits
-
+                teleOpVPivotSet = CombinedTurret.VPivotLimits(teleOpExtendSet, teleOpVPivotSet, teleOpRotateSet, controllerY, true);
             }else{//normal mode
-
-                if(gamepad1.y){
-                    controllerY = true;
-                }else if(gamepad2.y){
-                    controllerY = true;
-                }else{
-                    controllerY = false;
-                }
-
-                teleOpVPivotSet = CombinedTurret.VPivotLimits(teleOpExtendSet, teleOpVPivotSet, teleOpRotateSet, controllerY);
-
+                teleOpVPivotSet = CombinedTurret.VPivotLimits(teleOpExtendSet, teleOpVPivotSet, teleOpRotateSet, controllerY, false);
 
                 //setpoint limits
                 if(teleOpVPivotSet > 2600){

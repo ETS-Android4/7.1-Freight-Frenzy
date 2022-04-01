@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.GeneralRobotCode.Smoothing;
 import org.firstinspires.ftc.teamcode.TurretClasses.TurretCombined;
 
 
-@Config
-@TeleOp
+//@Config
+//@TeleOp
 public class NewCarouselRedTeleOp extends LinearOpMode{
 
 

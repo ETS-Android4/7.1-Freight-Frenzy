@@ -112,7 +112,7 @@ public class Cube_Tracking extends LinearOpMode {
                 controllerY = false;
             }
 
-            teleOpVPivotSet = CombinedTurret.VPivotLimits(teleOpExtendSet, teleOpVPivotSet, teleOpRotateSet, controllerY);
+            teleOpVPivotSet = CombinedTurret.VPivotLimits(teleOpExtendSet, teleOpVPivotSet, teleOpRotateSet, controllerY, false);
 
 
             //setpoint limits

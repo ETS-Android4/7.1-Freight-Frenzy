@@ -15,9 +15,9 @@ public class TurretCombined {
     public double extendSpeedSet, rotateSpeedSet, vPivotSpeedSet;
     public double extendSpeed, rotateSpeed, vPivotSpeed;
     double extendEncoderTickPerIn = 53,vPivotEncoder1Degree = 23 ;
-    public double vPivotPM, vPivotDM, vPivotUpPm = .028, vPivotDnPM = .018, vPivotUpDM = .02, vPivotDnDM = .015;
+    public double vPivotPM, vPivotDM, vPivotUpPm = .025, vPivotDnPM = .014, vPivotUpDM = .02, vPivotDnDM = .015;
     public double extendPM = .018, extendDM = 0.01;
-    public double rotatePM = .00009, rotateDM = 0.00012;
+    public double rotatePM = .00012, rotateDM = 0.0001;
     double extendSpeedDifference, rotateSpeedDifference, vPivotSpeedDifference;
     double extendLastSpeedDifference = 0, rotateLastSpeedDifference = 0, vPivotLastSpeedDifference = 0;
     public double extendFinalMotorPower = 0, rotateFinalMotorPower = 0, vPivotFinalMotorPower = 0;
@@ -164,8 +164,8 @@ public class TurretCombined {
             extendSpeedSet = extendSpeedSet * (Math.abs(extendSet - extendModifiedEncoder)/Math.abs(ExtendSpeedSet * 10));
         }
 
-        if(Math.abs(Math.abs(rotateSet) - Math.abs(rotateModifiedEncoder)) < Math.abs(rotateSpeedSet/3)){
-            rotateSpeedSet = rotateSpeedSet * (Math.abs((rotateSet - rotateModifiedEncoder)/Math.abs(rotateSpeedSet/3)));
+        if(Math.abs(Math.abs(rotateSet) - Math.abs(rotateModifiedEncoder)) < Math.abs(rotateSpeedSet/3.25)){
+            rotateSpeedSet = rotateSpeedSet * (Math.abs((rotateSet - rotateModifiedEncoder)/Math.abs(rotateSpeedSet/3.25)));
         }
         if( Math.abs(rotateSet - rotateModifiedEncoder) < 1){
             rotateSpeedSet = 0;
@@ -252,23 +252,29 @@ public class TurretCombined {
 
     double VPIVOTMIN;
     double Y_INT = 980;
-    public double VPivotLimits(double extendSet, double vpivotSet, double rotateset, boolean yintreset){
+    public double VPivotLimits(double extendSet, double vpivotSet, double rotateset, boolean yintreset, boolean limitsBypass){
         if(yintreset){
             Y_INT = (2.2 * vpivotSet) - extendSet;
         }
 
         VPIVOTMIN = (extendSet + Y_INT)/2.2;
 
-        if(extendSet < 110 && rotateset < 100 && rotateset > -100){
-            if(vpivotSet < 900){
-                return 900;
-            }else{
+        if(limitsBypass) {
+
+            return vpivotSet;
+
+        }else{
+            if (extendSet < 110 && rotateset < 100 && rotateset > -100) {
+                if (vpivotSet < 900) {
+                    return 900;
+                } else {
+                    return vpivotSet;
+                }
+            } else if (VPIVOTMIN > vpivotSet) {
+                return VPIVOTMIN;
+            } else {
                 return vpivotSet;
             }
-        }else if(VPIVOTMIN > vpivotSet){
-            return VPIVOTMIN;
-        }else{
-            return vpivotSet;
         }
 
     }
