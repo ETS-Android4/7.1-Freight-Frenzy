@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.GeneralRobotCode.FreightFrenzyHardwareMap;
 import org.firstinspires.ftc.teamcode.TurretClasses.TurretCombined;
 import org.opencv.core.Mat;
@@ -28,13 +29,14 @@ import java.util.List;
 @Config
 public class Cube_Tracking extends LinearOpMode {
 
-    public static double followP = .075;
+    public static double followP = .05;
 
-    double teleOpExtendSpeedSet = 10, teleOpRotateSet = 0, teleOpVPivotSet = 900, teleOpExtendSet = 220, teleOpRotateSpeedSet = 1000, teleOpVPivotSpeedSet = 10;
+    double teleOpExtendSpeedSet = 10, teleOpRotateSet = 0, teleOpVPivotSet = 500, teleOpExtendSet = 220, teleOpRotateSpeedSet = 1000, teleOpVPivotSpeedSet = 10;
 
     double cubeDifference = 0, cubeChange = 0;
 
     boolean controllerY = false;
+    public static double Hmin = 15, Hmax = 50, Smin = 150, Smax = 255, Vmin = 150, Vmax = 255 ;
 
     TurretCombined CombinedTurret = new TurretCombined();
     FreightFrenzyHardwareMap robot = new FreightFrenzyHardwareMap();
@@ -98,9 +100,30 @@ public class Cube_Tracking extends LinearOpMode {
             telemetry.addData("target Area", pipeline.targetArea);
 
             cubeDifference = 320 - pipeline.cubeCenter;
-            cubeChange = cubeDifference * followP;
+            if(Math.abs(cubeDifference) < 10){
+                cubeChange = 0;
+            }else{
+                cubeChange = cubeDifference * followP;
+            }
 
             teleOpRotateSet = teleOpRotateSet - cubeChange;
+
+
+            if(gamepad1.left_bumper && robot.I_DS.getDistance(DistanceUnit.INCH) > 2){
+                if(pipeline.cubeCenter > 300 && pipeline.cubeCenter < 340){
+                    teleOpExtendSet = teleOpExtendSet + 30;
+                }
+                robot.RI_S.setPower(-.5);
+                robot.LI_S.setPower(.5);
+            }else{
+                teleOpExtendSet = 275;
+                teleOpVPivotSet = 500;
+                robot.RI_S.setPower(0);
+                robot.LI_S.setPower(0);
+            }
+            if(pipeline.targetX < 0){
+                teleOpRotateSet = 0;
+            }
 
 
 
@@ -162,7 +185,7 @@ public class Cube_Tracking extends LinearOpMode {
         static final Scalar WHITE = new Scalar(255, 255, 255);
 
         int indexLowest; double yLowest = -10;
-        double targetX; double targetY; double targetWidth; double targetArea;
+        double targetX; double targetY; double targetWidth; double targetArea; double yLeft = -10;
         double cubeCenter = 320;
         // Create a Mat object that will hold the color data
 
@@ -182,7 +205,7 @@ public class Cube_Tracking extends LinearOpMode {
         }
 
         public boolean filterContours(MatOfPoint contour) {
-            return Imgproc.contourArea(contour) > 150;
+            return Imgproc.contourArea(contour) > 400;
         }
 
         @Override
@@ -190,13 +213,18 @@ public class Cube_Tracking extends LinearOpMode {
 
             Mat YCrCb = new Mat();
             Mat HSV = new Mat();
+            Mat RGBA = new Mat();
 
-            Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
+            Imgproc.cvtColor(input, HSV,Imgproc.COLOR_RGB2HSV);
 
-            Scalar scalarLowerYCrCb = new Scalar(  10.0, 160.0, 160);
-            Scalar scalarUpperYCrCb = new Scalar(25.0, 255.0, 255.0);
+            Scalar scalarLowerYCrCb = new Scalar(Hmin, Smin, Vmin);
+            Scalar scalarUpperYCrCb = new Scalar(Hmax, Smax, Vmax);
+            //Scalar scalarLowerYCrCb = new Scalar(15.0, 100.0, 120.0);
+            //Scalar scalarUpperYCrCb = new Scalar(45.0, 255.0, 255.0);
             Mat maskRed = new Mat();
-
+            //BLUE DO NOT REMOVE
+            //Scalar scalarLowerYCrCb = new Scalar(80.0, 70.0, 100.0);
+            //Scalar scalarUpperYCrCb = new Scalar(180.0, 255.0, 255.0);
 
             //inRange(HSV, lowYellow, highYellow, maskYellow);
             //inRange(HSV, lowWhite, highWhite, maskWhite);
@@ -222,14 +250,21 @@ public class Cube_Tracking extends LinearOpMode {
                         redMask = Imgproc.boundingRect(redContours.get(i));
                         Imgproc.rectangle(input, redMask, AQUA, 2);
 
-                        if(redMask.y > yLowest){
+                        if(Math.abs((redMask.y + redMask.height) - yLowest) < 80){
+                            if(redMask.x + redMask.width > yLeft){
+                                indexLowest = i;
+                                yLowest = redMask.y + redMask.height;
+                                yLeft = redMask.x + redMask.width;
+                            }
+                        }else if(redMask.y + redMask.height > yLowest){
                             indexLowest = i;
-                            yLowest = redMask.y;
+                            yLowest = redMask.y + redMask.height;
+                            yLeft = redMask.x + redMask.width;
                         }
                     }
                 }
                 redMask = Imgproc.boundingRect(redContours.get(indexLowest));
-                Imgproc.rectangle(input, redMask, GOLD, -5);
+                Imgproc.rectangle(input, redMask, PARAKEET, -5);
                 targetX = redMask.x;
                 targetY = redMask.y;
                 targetWidth = redMask.width;
@@ -250,6 +285,7 @@ public class Cube_Tracking extends LinearOpMode {
 
 
             YCrCb.release();
+            RGBA.release();
             HSV.release();
             maskRed.release();
 

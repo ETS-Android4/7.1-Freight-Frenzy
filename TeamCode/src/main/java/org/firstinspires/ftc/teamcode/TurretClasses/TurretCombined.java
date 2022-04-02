@@ -96,9 +96,12 @@ public class TurretCombined {
         }else {
 
             //setpoint limits
-            if (ExtendSet > 1000) {
-                extendSet = 1000;
-            } else {
+            if (ExtendSet > 870) {
+                extendSet = 870;
+            }else if(ExtendSet < -60){
+                extendSet = -60;
+            }
+            else {
                 extendSet = ExtendSet;
             }
 
@@ -251,7 +254,7 @@ public class TurretCombined {
     }
 
     double VPIVOTMIN;
-    double Y_INT = 980;
+    double Y_INT = 1030;
     public double VPivotLimits(double extendSet, double vpivotSet, double rotateset, boolean yintreset, boolean limitsBypass){
         if(yintreset){
             Y_INT = (2.2 * vpivotSet) - extendSet;
@@ -264,7 +267,7 @@ public class TurretCombined {
             return vpivotSet;
 
         }else{
-            if (extendSet < 110 && rotateset < 100 && rotateset > -100) {
+            if (extendSet < 110 && rotateset < 300 && rotateset > -300) {
                 if (vpivotSet < 900) {
                     return 900;
                 } else {

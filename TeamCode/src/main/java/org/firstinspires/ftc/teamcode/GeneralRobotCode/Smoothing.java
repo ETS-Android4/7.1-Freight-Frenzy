@@ -141,7 +141,7 @@ public class Smoothing {
 
 
         DriveZArrayNum = DriveZArrayNum + 1;
-        if(DriveZArrayNum >= 9){
+        if(DriveZArrayNum >= 13){
             DriveZArrayNum = 0;
         }
 
@@ -158,12 +158,12 @@ public class Smoothing {
 
     double RotateTotal;
     int RotateArrayNum = 0, RotatefirstLoop = 0;
-    double RotateArray[] = new double[5];
+    double RotateArray[] = new double[10];
 
     public double SmoothRotate(double input){
         if(RotatefirstLoop == 0) {
             RotatefirstLoop = 1;
-            for (int RotateInitialSet = 0; RotateInitialSet < 5; RotateInitialSet++) {
+            for (int RotateInitialSet = 0; RotateInitialSet < 10; RotateInitialSet++) {
                 RotateArray[RotateInitialSet] = 0;
             }
         }
@@ -175,18 +175,51 @@ public class Smoothing {
 
 
         RotateArrayNum = RotateArrayNum + 1;
-        if(RotateArrayNum >= 5){
+        if(RotateArrayNum >= 10){
             RotateArrayNum = 0;
         }
 
-        if(Math.abs(input) < .08){
-            for (int RotateInitialSet = 0; RotateInitialSet < 7; RotateInitialSet++) {
+        if(Math.abs(input) < 8){
+            for (int RotateInitialSet = 0; RotateInitialSet < 10; RotateInitialSet++) {
                 RotateArray[RotateInitialSet] = 0;
             }
             RotateTotal = 0;
         }
 
-        return RotateTotal/5;
+        return RotateTotal/10;
+
+    }
+    double RotateTotalLeft;
+    int RotateLeftArrayNum = 0, RotateLeftfirstLoop = 0;
+    double RotateLeftArray[] = new double[10];
+
+    public double SmoothRotateLeft(double input){
+        if(RotateLeftfirstLoop == 0) {
+            RotateLeftfirstLoop = 1;
+            for (int RotateLeftInitialSet = 0; RotateLeftInitialSet < 10; RotateLeftInitialSet++) {
+                RotateLeftArray[RotateLeftInitialSet] = 0;
+            }
+        }
+        RotateTotalLeft = RotateTotalLeft - RotateLeftArray[RotateLeftArrayNum];
+
+        RotateLeftArray[RotateLeftArrayNum] = input;
+
+        RotateTotalLeft = RotateTotalLeft + RotateLeftArray[RotateLeftArrayNum];
+
+
+        RotateLeftArrayNum = RotateLeftArrayNum + 1;
+        if(RotateLeftArrayNum >= 10){
+            RotateLeftArrayNum = 0;
+        }
+
+        if(Math.abs(input) < 8){
+            for (int RotateLeftInitialSet = 0; RotateLeftInitialSet < 10; RotateLeftInitialSet++) {
+                RotateLeftArray[RotateLeftInitialSet] = 0;
+            }
+            RotateTotalLeft = 0;
+        }
+
+        return RotateTotalLeft/10;
 
     }
 
