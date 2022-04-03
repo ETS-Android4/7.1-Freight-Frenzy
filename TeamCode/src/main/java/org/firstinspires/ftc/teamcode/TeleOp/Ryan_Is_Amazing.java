@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.TurretClasses.TurretCombined;
 @Config
 @TeleOp
 
-public class _3_31_22_Red_TeleOp extends LinearOpMode{
+public class Ryan_Is_Amazing extends LinearOpMode{
 
     public static double yint = 720;
     public static double slope = 2;
@@ -60,9 +60,9 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
             CombinedTurret.rotateDM = rotateD;
             //Drivetrain setpoints with smoothing and expontential code
 
-            x = Smoothing.SmoothDriveX(-Math.copySign(gamepad1.left_stick_x, gamepad1.left_stick_x * gamepad1.left_stick_x * gamepad1.left_stick_x));
+            z = Smoothing.SmoothDriveX(Math.copySign(gamepad1.left_stick_x, gamepad1.left_stick_x * gamepad1.left_stick_x * gamepad1.left_stick_x));
             y = Smoothing.SmoothDriveY( -(Math.copySign(gamepad1.left_stick_y, gamepad1.left_stick_y * gamepad1.left_stick_y * gamepad1.left_stick_y)));
-            z = Smoothing.SmoothDriveZ(  Math.copySign(gamepad1.right_stick_x, gamepad1.right_stick_x));
+            x= Smoothing.SmoothDriveZ( - Math.copySign(gamepad1.right_stick_x, gamepad1.right_stick_x));
 
 
             //slow speed on the drivetrain

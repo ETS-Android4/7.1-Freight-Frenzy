@@ -111,7 +111,7 @@ public class Cube_Tracking extends LinearOpMode {
 
             if(gamepad1.left_bumper && robot.I_DS.getDistance(DistanceUnit.INCH) > 2){
                 if(pipeline.cubeCenter > 300 && pipeline.cubeCenter < 340){
-                    teleOpExtendSet = teleOpExtendSet + 30;
+                    teleOpExtendSet = teleOpExtendSet + 50;
                 }
                 robot.RI_S.setPower(-.5);
                 robot.LI_S.setPower(.5);
@@ -122,6 +122,10 @@ public class Cube_Tracking extends LinearOpMode {
                 robot.LI_S.setPower(0);
             }
             if(pipeline.targetX < 0){
+                teleOpRotateSet = 0;
+            }
+
+            if(gamepad1.left_trigger < .1){
                 teleOpRotateSet = 0;
             }
 
