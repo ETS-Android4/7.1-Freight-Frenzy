@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.checkerframework.checker.units.qual.C;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.GeneralRobotCode.FreightFrenzyHardwareMap;
@@ -42,10 +43,10 @@ public class Cube_Tracking extends LinearOpMode {
     FreightFrenzyHardwareMap robot = new FreightFrenzyHardwareMap();
 
     // Define Webcam
-    OpenCvCamera webcam;
+    OpenCvCamera Cubewebcam;
 
     // Create Pipeline
-    static OpenCV_Pipeline pipeline;
+    static CubeTracking_Pipeline Cubepipeline;
 
     @Override
     public void runOpMode() {
@@ -55,23 +56,23 @@ public class Cube_Tracking extends LinearOpMode {
 
 
         // Set up webcam
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "TurretCam1"), cameraMonitorViewId);
+        int CubecameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        Cubewebcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "TurretCam1"), CubecameraMonitorViewId);
 
         // Set up pipeline
-        pipeline = new OpenCV_Pipeline();
-        webcam.setPipeline(pipeline);
+        Cubepipeline = new CubeTracking_Pipeline();
+        Cubewebcam.setPipeline(Cubepipeline);
 
 
 
         // Start camera streaming
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+        Cubewebcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+                Cubewebcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
                 FtcDashboard dashboard = FtcDashboard.getInstance();
                 telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-                FtcDashboard.getInstance().startCameraStream(webcam, 10);
+                FtcDashboard.getInstance().startCameraStream(Cubewebcam, 10);
             }
 
             @Override
@@ -91,15 +92,14 @@ public class Cube_Tracking extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()){
-            // Telemetry readings for the HSV values in each region
-//            telemetry.addData("Region 1", "%7d, %7d, %7d", pipeline.RGB_Value[0], pipeline.RGB_Value[1], pipeline.RGB_Value[2]);
 
-            telemetry.addData("targetX", pipeline.targetX);
-            telemetry.addData("targetY", pipeline.targetY);
-            telemetry.addData("targetWidth", pipeline.targetWidth);
-            telemetry.addData("target Area", pipeline.targetArea);
 
-            cubeDifference = 320 - pipeline.cubeCenter;
+            telemetry.addData("targetX", Cubepipeline.targetX);
+            telemetry.addData("targetY", Cubepipeline.targetY);
+            telemetry.addData("targetWidth", Cubepipeline.targetWidth);
+            telemetry.addData("target Area", Cubepipeline.targetArea);
+
+            cubeDifference = 320 - Cubepipeline.cubeCenter;
             if(Math.abs(cubeDifference) < 10){
                 cubeChange = 0;
             }else{
@@ -110,7 +110,7 @@ public class Cube_Tracking extends LinearOpMode {
 
 
             if(gamepad1.left_bumper && robot.I_DS.getDistance(DistanceUnit.INCH) > 2){
-                if(pipeline.cubeCenter > 300 && pipeline.cubeCenter < 340){
+                if(Cubepipeline.cubeCenter > 300 && Cubepipeline.cubeCenter < 340){
                     teleOpExtendSet = teleOpExtendSet + 50;
                 }
                 robot.RI_S.setPower(-.5);
@@ -121,7 +121,7 @@ public class Cube_Tracking extends LinearOpMode {
                 robot.RI_S.setPower(0);
                 robot.LI_S.setPower(0);
             }
-            if(pipeline.targetX < 0){
+            if(Cubepipeline.targetX < 0){
                 teleOpRotateSet = 0;
             }
 
@@ -171,14 +171,14 @@ public class Cube_Tracking extends LinearOpMode {
 
             telemetry.update();
         }
-        webcam.stopStreaming();
-        webcam.closeCameraDevice();
+        Cubewebcam.stopStreaming();
+        Cubewebcam.closeCameraDevice();
 
 
     }
 
 
-    public static class OpenCV_Pipeline extends OpenCvPipeline {
+    public static class CubeTracking_Pipeline extends OpenCvPipeline {
 
         /** Most important section of the code: Colors **/
         static final Scalar GOLD = new Scalar(255, 215, 0);
@@ -193,18 +193,14 @@ public class Cube_Tracking extends LinearOpMode {
         double cubeCenter = 320;
         // Create a Mat object that will hold the color data
 
-        Rect yellowMask;
-        Rect whiteMask;
+
         Rect redMask;
 
-        List<MatOfPoint> yellowContours;
-        List<MatOfPoint> whiteContours;
+
         List<MatOfPoint> redContours;
 
         // Make a Constructor
-        public OpenCV_Pipeline() {
-            yellowContours = new ArrayList<MatOfPoint>();
-            whiteContours = new ArrayList<MatOfPoint>();
+        public CubeTracking_Pipeline() {
             redContours = new ArrayList<MatOfPoint>();
         }
 
@@ -226,18 +222,11 @@ public class Cube_Tracking extends LinearOpMode {
             //Scalar scalarLowerYCrCb = new Scalar(15.0, 100.0, 120.0);
             //Scalar scalarUpperYCrCb = new Scalar(45.0, 255.0, 255.0);
             Mat maskRed = new Mat();
-            //BLUE DO NOT REMOVE
-            //Scalar scalarLowerYCrCb = new Scalar(80.0, 70.0, 100.0);
-            //Scalar scalarUpperYCrCb = new Scalar(180.0, 255.0, 255.0);
 
-            //inRange(HSV, lowYellow, highYellow, maskYellow);
-            //inRange(HSV, lowWhite, highWhite, maskWhite);
+
             inRange(HSV, scalarLowerYCrCb, scalarUpperYCrCb, maskRed);
 
-//            Core.inRange();
 
-            yellowContours.clear();
-            whiteContours.clear();
             redContours.clear();
 
 

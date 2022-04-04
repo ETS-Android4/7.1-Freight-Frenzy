@@ -139,6 +139,8 @@ public class RedWarehouseCycling extends LinearOpMode {
             robot.TR_M.setPower(CombinedTurret.rotateFinalMotorPower);
             robot.TE_M.setPower(CombinedTurret.extendFinalMotorPower);
             robot.TP_M.setPower(CombinedTurret.vPivotFinalMotorPower);
+
+
             if(gamepad1.dpad_up){
                 TSERegionThreshold = TSERegionThreshold + 1;
             }else if(gamepad1.dpad_down){
@@ -169,7 +171,9 @@ public class RedWarehouseCycling extends LinearOpMode {
         robot.LB_M.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         robot.RF_M.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.RF_M.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        //Shuts down Tensor Flow
+        //Shuts down OpenCV
+        webcam.stopStreaming();
+        webcam.closeCameraDevice();
         //Sets our intial varible setpoints
         action = 1;
         startTime = getRuntime();

@@ -109,10 +109,13 @@ public class BlueCyclingNew extends LinearOpMode {
     @Override
 
     public void runOpMode() {
+        //declaring FTC Dashboard
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
+        //inits the robot hardwaremap
         robot.init(hardwareMap);
+        //sets up the camera
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "RightCam"), cameraMonitorViewId);
 
@@ -125,13 +128,17 @@ public class BlueCyclingNew extends LinearOpMode {
             //starts the webcam and defines the pixels
             public void onOpened() {
                 webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+                //gives FTC dashboard acess to the camera
                 FtcDashboard.getInstance().startCameraStream(webcam, 10);
+                telemetry.addData("CameraOpened", "");
+                telemetry.update();
 
             }
 
+            //if the camera errors this happens
             @Override
             public void onError(int errorCode) {
-                telemetry.addData("cameraNotOpened", 0);
+                telemetry.addData("cameraNotOpened", 000000000000000000000000000000000000000000000000000000);
                 telemetry.update();
                 /*
                  * This will be called if the camera could not be opened
@@ -139,8 +146,8 @@ public class BlueCyclingNew extends LinearOpMode {
             }
         });
         telemetry.update();
-        //Depending on the ring stack we change our intake to diffrent heights to be able to reach the top of the stack
-        //Enters our 1 loop system, will exit once all actions are done
+
+        //this homes the turret and puts the turret in a position to fit in the 18in cube
         while (!opModeIsActive()) {
 
             VPivotSetpoint = 900;
@@ -155,9 +162,9 @@ public class BlueCyclingNew extends LinearOpMode {
             }
 
             CombinedTurret.TurretCombinedMethod(extendSetpoint,extendSpeed,rotateSetpoint,rotateSpeed, VPivotSetpoint,VPivotSpeed, robot.TE_M.getCurrentPosition(), robot.TE_G.getState(), robot.TR_M.getCurrentPosition(), robot.TR_G.getState(), robot.TP_M.getCurrentPosition(), robot.TP_G.getState());
-            //robot.TR_M.setPower(CombinedTurret.rotateFinalMotorPower);
-            //robot.TE_M.setPower(CombinedTurret.extendFinalMotorPower);
-            //robot.TP_M.setPower(CombinedTurret.vPivotFinalMotorPower);
+            robot.TR_M.setPower(CombinedTurret.rotateFinalMotorPower);
+            robot.TE_M.setPower(CombinedTurret.extendFinalMotorPower);
+            robot.TP_M.setPower(CombinedTurret.vPivotFinalMotorPower);
 
 
             telemetry.update();
@@ -167,13 +174,14 @@ public class BlueCyclingNew extends LinearOpMode {
 
 
         waitForStart();
+        //resets encoders to ensure an accurate autonomous
         robot.LF_M.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.LF_M.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         robot.LB_M.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.LB_M.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         robot.RF_M.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.RF_M.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        //Shuts down Tensor Flow
+
         //Sets our intial varible setpoints
         action = 1;
         startTime = getRuntime();
@@ -197,22 +205,26 @@ public class BlueCyclingNew extends LinearOpMode {
         rotateSpeed = 2300;
         extendSpeed = 35;
         VPivotSpeed = 12;
+        //main loop for the autonomous code
         while (opModeIsActive() && stopProgram == 0) {
-            if(action == 2 && lastAction != 2){
 
-                intakeCounter = intakeCounter + 1;
-            }
+            //TODO IDK what this is
             lastAction = action;
             if(action == 1) {//dropping in correct level
                 if (TSEPos == 3) {//TOP GOAL
-                    rotateSetpoint = 1560;
-                    extendSetpoint = 0;
-                    VPivotSetpoint = 1620;
+
+                    //holding our drivetrain location while placing preloaded freight
                     if (DirectionClass.distanceFromReturn() <= .7) {
                         StopMotors();
                     }
+                    //setting turret positions to drop the preloaded freight
+                    rotateSetpoint = 1560;
+                    extendSetpoint = 0;
+                    VPivotSetpoint = 1620;
+                    //making sure the turret moves in a path that does not hit anything
                     if ((CombinedTurret.vPivotModifiedEncoder >= 875)) {
                         extendSetpoint = 865;
+                        //once we are in a good position to drop we start a timer and drop the freight
                         if (CombinedTurret.extendModifiedEncoder <= 900 && CombinedTurret.extendModifiedEncoder >= 820) {
                             if (loopcount == 0) {
                                 loopcount = 1;
@@ -220,6 +232,7 @@ public class BlueCyclingNew extends LinearOpMode {
                             }
                             leftIntakeSet = -0.4;
                             rightIntakeSet = 0.4;
+                            //after the freight is dropped or the timer is out we move to the next action
                             if (robot.I_DS.getDistance(DistanceUnit.INCH) >= 1 || getRuntime() > timepassed) {
                                 StopMotors();
                                 action = 2;
@@ -232,14 +245,18 @@ public class BlueCyclingNew extends LinearOpMode {
                         }
                     }
                 }else if (TSEPos == 2) {//MID GOAL
-                    rotateSetpoint = 1550;
-                    extendSetpoint = 0;
-                    VPivotSetpoint = 1250;
+                    //holding our drivetrain location while placing preloaded freight
                     if (DirectionClass.distanceFromReturn() <= .7) {
                         StopMotors();
                     }
+                    //setting turret positions to drop the preloaded freight
+                    rotateSetpoint = 1550;
+                    extendSetpoint = 0;
+                    VPivotSetpoint = 1250;
+                    //making sure the turret moves in a path that does not hit anything
                     if (CombinedTurret.vPivotModifiedEncoder >= 875) {
                         extendSetpoint = 865;
+                        //once we are in a good position to drop we start a timer and drop the freight
                         if (CombinedTurret.extendModifiedEncoder <= 900 && CombinedTurret.extendModifiedEncoder >= 820) {
                             if(loopcount == 0){
                                 loopcount = 1;
@@ -247,6 +264,7 @@ public class BlueCyclingNew extends LinearOpMode {
                             }
                             leftIntakeSet = -.4;
                             rightIntakeSet = .4;
+                            //after the freight is dropped or the timer is out we move to the next action
                             if (robot.I_DS.getDistance(DistanceUnit.INCH) >= 1 || getRuntime() > timepassed) {
                                 StopMotors();
                                 action = 2;
@@ -259,14 +277,18 @@ public class BlueCyclingNew extends LinearOpMode {
                         }
                     }
                 }else if (TSEPos == 1) {// BOTTOM GOAL
-                    rotateSetpoint = 1630;
-                    extendSetpoint = 0;
-                    VPivotSetpoint = 1030;
+                    //holding our drivetrain location while placing preloaded freight
                     if (DirectionClass.distanceFromReturn() <= .7) {
                         StopMotors();
                     }
+                    //setting turret positions to drop the preloaded freight
+                    rotateSetpoint = 1630;
+                    extendSetpoint = 0;
+                    VPivotSetpoint = 1030;
+                    //making sure the turret moves in a path that does not hit anything
                     if (CombinedTurret.vPivotModifiedEncoder >= 875) {
                         extendSetpoint = 845;
+                        //once we are in a good position to drop we start a timer and drop the freight
                         if (CombinedTurret.extendModifiedEncoder <= 900 && CombinedTurret.extendModifiedEncoder >= 810) {
                             if(loopcount == 0){
                                 loopcount = 1;
@@ -274,6 +296,7 @@ public class BlueCyclingNew extends LinearOpMode {
                             }
                             leftIntakeSet = -.4;
                             rightIntakeSet = .4;
+                            //after the freight is dropped or the timer is out we move to the next action
                             if (robot.I_DS.getDistance(DistanceUnit.INCH) >= 1 || getRuntime() > timepassed) {
                                 StopMotors();
                                 action = 2;
@@ -286,6 +309,7 @@ public class BlueCyclingNew extends LinearOpMode {
                         }
                     }
                 }
+            //a wait function for use if we ever need to put a wait anywhere in the code
             }else if(action == .5){
                 if(lastAction != .5){
                     waitStart = getRuntime();
@@ -301,6 +325,7 @@ public class BlueCyclingNew extends LinearOpMode {
 
                 }
             }
+            //driving to the warehouse line with our front color sensors
             else if(action == 2){
                 //setting the intake position using a safe path to prevent collisions
                 extendSetpoint = 230;
@@ -308,7 +333,7 @@ public class BlueCyclingNew extends LinearOpMode {
 
                 rotateSetpoint = 0;
 
-
+                //waiting until the extend and rotate are safe to lower the turret
                 if(Math.abs(extendSetpoint - CombinedTurret.extendModifiedEncoder) < 100 && Math.abs(rotateSetpoint - CombinedTurret.rotateModifiedEncoder) < 150){
                     VPivotSetpoint = 500;
                     VPivotSpeed = 25;
@@ -318,6 +343,8 @@ public class BlueCyclingNew extends LinearOpMode {
                 }
                 if(oneLoop == 0){//setting variables only once so we can change them if we need to using our failsafe program
                     //setting drivetrain positions and speeds
+                    xSetpoint = 34;
+                    ySetpoint = YChangingSet;
                     thetaSetpoint = 0;
                     thetaDeccelerationDegree = 2;
                     thetaTargetSpeed = 4.5;
@@ -325,34 +352,29 @@ public class BlueCyclingNew extends LinearOpMode {
                     decelerationDistance = 7;
                     slowMoveSpeed = 8;
                     slowMovedDistance = 6;
-                    xSetpoint = 34;
-                    ySetpoint = YChangingSet;
                     targetSpeed = 40;
-                    oneLoop = 1;
                     action2TimeSafe = getRuntime();
+                    oneLoop = 1;
 
 
                 }
 
-                if(robot.LF_C.alpha() > 800  || robot.RF_C.alpha() > 800 || robot.RB_C.alpha() > 800 || robot.RF_C.alpha() > 800 ||action2TimeSafe + 4 < getRuntime()){
-                    hasColorSenssors = true;
+                if(robot.LF_C.alpha() > 800  || robot.RF_C.alpha() > 800  || OdoClass.odoXReturn() > 35){
 
-                }
-                if(hasColorSenssors == true){
-                    StopMotors();
                     STOPMOTORS = true;
                     if(CombinedTurret.vPivotModifiedEncoder < 600){
                         action = 3;
                         startPointX = OdoClass.odoXReturn();
                         startPointY = OdoClass.odoYReturn();
-                        leftIntakeSet = .5;
-                        rightIntakeSet = -.5;
+                        leftIntakeSet = 0;
+                        rightIntakeSet = -0;
                         breakout = 0;
                         oneLoop = 0;
-                        hasColorSenssors = false;
                         STOPMOTORS = false;
                     }
+
                 }
+
 
 
             }
@@ -374,16 +396,6 @@ public class BlueCyclingNew extends LinearOpMode {
                     oneLoop = 1;
                 }
 
-                 /*   if(intakeCounter > 2){
-                        rotateSetpoint = 250;
-                        extendSetpoint = 325;
-                        VPivotSetpoint = 460;
-
-                    }else{
-                        rotateSetpoint = 0;
-                        extendSetpoint = 275;
-                    }
-                    rotateSpeed = 2300;*/
 
 
 
@@ -684,6 +696,7 @@ public class BlueCyclingNew extends LinearOpMode {
         int indexLowest; double yLowest = -10;
         double targetX; double targetY; double targetWidth; double targetArea; double yLeft = -10;
         double cubeCenter = 320;
+        double TSELocation = 0;
         // Create a Mat object that will hold the color data
 
         Rect yellowMask;
@@ -747,6 +760,15 @@ public class BlueCyclingNew extends LinearOpMode {
                         redMask = Imgproc.boundingRect(redContours.get(i));
                         Imgproc.rectangle(input, redMask, GOLD, 10);
 
+                        if(redMask.y + redMask.height > 100 && redMask.y + redMask.height < 400){
+                            if(redMask.x + redMask.width > 200 && redMask.x + redMask.width < 300){
+                                TSELocation = 1;
+                            }else if(redMask.x + redMask.width > 300 && redMask.x + redMask.width <  400){
+                                TSELocation = 2;
+                            }else if(redMask.x + redMask.width > 400 && redMask.x + redMask.width < 480){
+                                TSELocation = 3;
+                            }
+                        }
                     }
                 }
                 redMask = Imgproc.boundingRect(redContours.get(indexLowest));
@@ -754,11 +776,7 @@ public class BlueCyclingNew extends LinearOpMode {
 
 
             }else{
-                targetX = -1;
-                targetY = -1;
-                targetWidth = -1;
-                targetArea = -1;
-                cubeCenter = 320;
+                TSELocation = -1;
 
             }
 
@@ -775,6 +793,7 @@ public class BlueCyclingNew extends LinearOpMode {
             return input;
         }
     }
+
 }
 
 
