@@ -194,14 +194,14 @@ public class Cube_Tracking extends LinearOpMode {
         // Create a Mat object that will hold the color data
 
 
-        Rect redMask;
+        Rect CubeMask;
 
 
-        List<MatOfPoint> redContours;
+        List<MatOfPoint> CubeContours;
 
         // Make a Constructor
         public CubeTracking_Pipeline() {
-            redContours = new ArrayList<MatOfPoint>();
+            CubeContours = new ArrayList<MatOfPoint>();
         }
 
         public boolean filterContours(MatOfPoint contour) {
@@ -221,47 +221,47 @@ public class Cube_Tracking extends LinearOpMode {
             Scalar scalarUpperYCrCb = new Scalar(Hmax, Smax, Vmax);
             //Scalar scalarLowerYCrCb = new Scalar(15.0, 100.0, 120.0);
             //Scalar scalarUpperYCrCb = new Scalar(45.0, 255.0, 255.0);
-            Mat maskRed = new Mat();
+            Mat maskCube = new Mat();
 
 
-            inRange(HSV, scalarLowerYCrCb, scalarUpperYCrCb, maskRed);
+            inRange(HSV, scalarLowerYCrCb, scalarUpperYCrCb, maskCube);
 
 
-            redContours.clear();
+            CubeContours.clear();
 
 
-            Imgproc.findContours(maskRed, redContours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-            Imgproc.drawContours(input, redContours, -1, AQUA); //input
+            Imgproc.findContours(maskCube, CubeContours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+            Imgproc.drawContours(input, CubeContours, -1, AQUA); //input
 
 
             yLowest = -640;
             indexLowest = 0;
 
-            if(redContours.size() > 0){
-                for (int i = 0; i < redContours.size(); i++){
-                    if (filterContours(redContours.get(i))){
-                        redMask = Imgproc.boundingRect(redContours.get(i));
-                        Imgproc.rectangle(input, redMask, AQUA, 2);
+            if(CubeContours.size() > 0){
+                for (int i = 0; i < CubeContours.size(); i++){
+                    if (filterContours(CubeContours.get(i))){
+                        CubeMask = Imgproc.boundingRect(CubeContours.get(i));
+                        Imgproc.rectangle(input, CubeMask, AQUA, 2);
 
-                        if(Math.abs((redMask.y + redMask.height) - yLowest) < 80){
-                            if(redMask.x + redMask.width > yLeft){
+                        if(Math.abs((CubeMask.y + CubeMask.height) - yLowest) < 80){
+                            if(CubeMask.x + CubeMask.width > yLeft){
                                 indexLowest = i;
-                                yLowest = redMask.y + redMask.height;
-                                yLeft = redMask.x + redMask.width;
+                                yLowest = CubeMask.y + CubeMask.height;
+                                yLeft = CubeMask.x + CubeMask.width;
                             }
-                        }else if(redMask.y + redMask.height > yLowest){
+                        }else if(CubeMask.y + CubeMask.height > yLowest){
                             indexLowest = i;
-                            yLowest = redMask.y + redMask.height;
-                            yLeft = redMask.x + redMask.width;
+                            yLowest = CubeMask.y + CubeMask.height;
+                            yLeft = CubeMask.x + CubeMask.width;
                         }
                     }
                 }
-                redMask = Imgproc.boundingRect(redContours.get(indexLowest));
-                Imgproc.rectangle(input, redMask, PARAKEET, -5);
-                targetX = redMask.x;
-                targetY = redMask.y;
-                targetWidth = redMask.width;
-                targetArea = redMask.height * redMask.width;
+                CubeMask = Imgproc.boundingRect(CubeContours.get(indexLowest));
+                Imgproc.rectangle(input, CubeMask, PARAKEET, -5);
+                targetX = CubeMask.x;
+                targetY = CubeMask.y;
+                targetWidth = CubeMask.width;
+                targetArea = CubeMask.height * CubeMask.width;
                 cubeCenter = targetX + (targetWidth/2);
 
             }else{
@@ -280,7 +280,7 @@ public class Cube_Tracking extends LinearOpMode {
             YCrCb.release();
             RGBA.release();
             HSV.release();
-            maskRed.release();
+            maskCube.release();
 
 
             return input;
