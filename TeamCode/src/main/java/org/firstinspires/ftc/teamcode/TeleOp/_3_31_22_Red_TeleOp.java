@@ -26,7 +26,7 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
     public double x, y, z;
 
     double teleOpExtendSet = 200, teleOpRotateSet = 0, teleOpVPivotSet = 1000;
-    double intakeVPivotSet = 480, intakeRotateSet = 0, intakeExtendSet = 275;
+    double intakeVPivotSet = 480, intakeRotateSet = -75, intakeExtendSet = 275;
     double teleOpExtendSpeedSet = 38, teleOpRotateSpeedSet = 2500, teleOpVPivotSpeedSet = 18;
     double lastDS = 5, timeStart = 0, CarouselMotor = 0, carouselP = .00012, lastTime = 0, lastCarouselE = 0;
     boolean oneLoop = false;
@@ -84,8 +84,8 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                 robot.RI_S.setPower(-.5);
                 robot.LI_S.setPower(.5);
             }else if(gamepad1.b || gamepad2.b || gamepad1.left_bumper){//outtake
-                robot.RI_S.setPower(.4);
-                robot.LI_S.setPower(-.4);
+                robot.RI_S.setPower(.3);
+                robot.LI_S.setPower(-.3);
             }else{//servos off
                 robot.RI_S.setPower(0);
                 robot.LI_S.setPower(0);
@@ -121,10 +121,10 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                     }
 
                 }else if(gamepad2.dpad_left || gamepad1.dpad_left){//Shared shipping hub intake position
-                    teleOpVPivotSet = 800;
-                    if (CombinedTurret.vPivotModifiedEncoder > 700) {
-                        teleOpRotateSet = intakeRotateSet + 1540;
-                        teleOpExtendSet = 0;
+                    teleOpVPivotSet = 700;
+                    if (CombinedTurret.vPivotModifiedEncoder > 600) {
+                        teleOpRotateSet = intakeRotateSet + 1600;
+                        teleOpExtendSet = -40;
                     }
 
                 }else if(gamepad2.dpad_up || gamepad1.dpad_up){//Mid alliance hub scoring position

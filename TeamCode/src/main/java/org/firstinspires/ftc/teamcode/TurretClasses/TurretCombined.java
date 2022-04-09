@@ -22,6 +22,7 @@ public class TurretCombined {
     double extendLastSpeedDifference = 0, rotateLastSpeedDifference = 0, vPivotLastSpeedDifference = 0;
     public double extendFinalMotorPower = 0, rotateFinalMotorPower = 0, vPivotFinalMotorPower = 0;
     public double cosineMult = 1, currentDegree;
+    public boolean trackingRotate = false;
     public boolean turretHomingTrigger = true, vPivotIsHomed = false, lastVPivotMag = false, homing1loop = false, extendStart = false;
     public boolean extendHomingHasExtended = false, extendIsHomed = false, rotateMagStart, rotateIsHomed = false, rotateHomingHasMoved = false;
 
@@ -167,12 +168,26 @@ public class TurretCombined {
             extendSpeedSet = extendSpeedSet * (Math.abs(extendSet - extendModifiedEncoder)/Math.abs(ExtendSpeedSet * 10));
         }
 
-        if(Math.abs(Math.abs(rotateSet) - Math.abs(rotateModifiedEncoder)) < Math.abs(rotateSpeedSet/3.25)){
-            rotateSpeedSet = rotateSpeedSet * (Math.abs((rotateSet - rotateModifiedEncoder)/Math.abs(rotateSpeedSet/3.25)));
+        if(trackingRotate){
+
+               // rotateSpeedSet = rotateSpeedSet * .3;
+                if(Math.abs(rotateSet - rotateModifiedEncoder) < 100){
+                    rotateSpeedSet = rotateSpeedSet * (Math.abs(rotateSet - rotateModifiedEncoder)/100);
+                }
+
+            if( Math.abs(rotateSet - rotateModifiedEncoder) < 10){
+                rotateSpeedSet = 0;
+            }
+        }else{
+            if(Math.abs(Math.abs(rotateSet) - Math.abs(rotateModifiedEncoder)) < Math.abs(rotateSpeedSet/3.25)){
+                rotateSpeedSet = rotateSpeedSet * (Math.abs((rotateSet - rotateModifiedEncoder)/Math.abs(rotateSpeedSet/3.25)));
+            }
+            if( Math.abs(rotateSet - rotateModifiedEncoder) < 1){
+                rotateSpeedSet = 0;
+            }
         }
-        if( Math.abs(rotateSet - rotateModifiedEncoder) < 1){
-            rotateSpeedSet = 0;
-        }
+
+
 
         if(Math.abs(vPivotSet - vPivotModifiedEncoder) < 5){
             vPivotSpeedSet = 0;
@@ -254,7 +269,7 @@ public class TurretCombined {
     }
 
     double VPIVOTMIN;
-    double Y_INT = 1030;
+    double Y_INT = 1000;
     public double VPivotLimits(double extendSet, double vpivotSet, double rotateset, boolean yintreset, boolean limitsBypass){
         if(yintreset){
             Y_INT = (2.2 * vpivotSet) - extendSet;

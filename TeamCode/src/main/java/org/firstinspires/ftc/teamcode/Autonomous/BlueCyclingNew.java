@@ -12,9 +12,11 @@ import com.sun.tools.javac.api.MultiTaskListener;
 
 import org.checkerframework.checker.units.qual.C;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.Camera;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.SwitchableCamera;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
 import org.firstinspires.ftc.teamcode.Autonomous.AutoClasses.DirectionCalcClass;
 import org.firstinspires.ftc.teamcode.Autonomous.AutoClasses.Odometry;
 import org.firstinspires.ftc.teamcode.Autonomous.AutoClasses.SpeedClass;
@@ -54,6 +56,7 @@ public class BlueCyclingNew extends LinearOpMode {
 
     //Declares Varibles
     public static double Hmin = 15, Hmax = 50, Smin = 150, Smax = 255, Vmin = 150, Vmax = 255 ;
+    public static double TSEHmin = 15, TSEHmax = 50, TSESmin = 150, TSESmax = 255, TSEVmin = 150, TSEVmax = 255 ;
     double breakout; double lastAction = 0;
     double startPointX; double startPointY;
     double timepassed;
@@ -73,7 +76,7 @@ public class BlueCyclingNew extends LinearOpMode {
     double extendSpeed;
     double VPivotSetpoint;
     double VPivotSpeed;
-    double TSEPos;
+    double TSEPos = 3;
     double leftIntakeSet = 0, rightIntakeSet = 0;
     double timeRemaining = 30, startTime;
     double IntakeXSetpoint = 40;
@@ -87,10 +90,12 @@ public class BlueCyclingNew extends LinearOpMode {
     double stuckOneLoopDelay = 0;
     double waitStart = 0;
     double intakeStartTime = 0;
+    double intakeCounter = 0;
 
     double action;
     boolean IsCameraOpened = false; boolean TSECamOpened = false, TurretCamOpened = false;
     double cubeDifference = 0, cubeChange = 0, CubeTrakingP = .05;
+    double cubeLocationRotateEncoder = 0, trackingInMotionSet = 0;
 
     // Define Webcams
     static CubeTracking_Pipeline CubePipline;
@@ -98,6 +103,7 @@ public class BlueCyclingNew extends LinearOpMode {
     static OpenCV_Pipeline pipeline;
 OpenCvCamera RightCam1;
 OpenCvCamera TurretCam2;
+
 
 //    WebcamName RightCam;
 //    WebcamName TurretCam1;
@@ -122,14 +128,49 @@ OpenCvCamera TurretCam2;
 
         int[] viewportContainerIds = OpenCvCameraFactory.getInstance().splitLayoutForMultipleViewports(cameraMonitorViewId, 2,OpenCvCameraFactory.ViewportSplitMethod.VERTICALLY);
        // SwitchableWebcam = OpenCvCameraFactory.getInstance().createSwitchableWebcam(cameraMonitorViewId, RightCam, TurretCam1);
-        TurretCam2 = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "TurretCam1"), viewportContainerIds[1]);
-        RightCam1 = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "RightCam"), viewportContainerIds[0]);
+        TurretCam2 = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "TurretCam1"), viewportContainerIds[0]);
+        RightCam1 = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "RightCam"), viewportContainerIds[1]);
 
 
         //allows to call pipline
         pipeline = new OpenCV_Pipeline();
         CubePipline = new CubeTracking_Pipeline();
 
+
+
+
+
+
+
+    /*    RightCam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            //starts the webcam and defines the pixels
+            public void onOpened() {
+
+                RightCam1.setPipeline(pipeline);
+                TSECamOpened = true;
+
+
+                RightCam1.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+                //gives FTC dashboard acess to the camera
+                //FtcDashboard.getInstance().startCameraStream(RightCam1, 10);
+                telemetry.addData("TSECameraOpened", "");
+                telemetry.update();
+
+
+
+
+            }
+            //if the camera errors this happens
+            @Override
+            public void onError(int errorCode) {
+                telemetry.addData("TSEcameraNotOpened", 000000000000000000000000000000000000000000000000000000);
+                telemetry.update();
+                /*
+                 * This will be called if the camera could not be opened
+`               */
+          //  }
+        //});
 
         TurretCam2.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
@@ -166,55 +207,21 @@ OpenCvCamera TurretCam2;
 
 
 
-
-
-
-
         //this homes the turret and puts the turret in a position to fit in the 18in cube
        while (!opModeIsActive()) {
 
-           if(!TSECamOpened && TurretCamOpened){
-               RightCam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-                   @Override
-                   //starts the webcam and defines the pixels
-                   public void onOpened() {
-
-                       RightCam1.setPipeline(pipeline);
-                       TSECamOpened = true;
-
-
-                       RightCam1.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
-                       //gives FTC dashboard acess to the camera
-                       // FtcDashboard.getInstance().startCameraStream(RightCam1, 10);
-                       telemetry.addData("TSECameraOpened", "");
-                       telemetry.update();
-
-
-
-
-                   }
-
-                   //if the camera errors this happens
-                   @Override
-                   public void onError(int errorCode) {
-                       telemetry.addData("TSEcameraNotOpened", 000000000000000000000000000000000000000000000000000000);
-                       telemetry.update();
-                /*
-                 * This will be called if the camera could not be opened
-`               */
-                   }
-               });
-           }
 
 
                VPivotSetpoint = 900;
                VPivotSpeed = 10;
-               if(Math.abs(-40 - CombinedTurret.extendModifiedEncoder) < 50 && Math.abs(442 - CombinedTurret.rotateModifiedEncoder) < 50){
+               if(Math.abs(-50 - CombinedTurret.extendModifiedEncoder) < 50 && Math.abs(465 - CombinedTurret.rotateModifiedEncoder) < 50){
                    VPivotSetpoint = 602;
 
                }else if(VPivotSetpoint > 850){
                    extendSetpoint = -50;
+
                    extendSpeed = 15;
+
                    rotateSetpoint = 465;
                    rotateSpeed = 1000;
 
@@ -227,6 +234,7 @@ OpenCvCamera TurretCam2;
 
                telemetry.addData("TSEcamOpened?", TSECamOpened);
                telemetry.addData("TurretCamOpened?", TurretCamOpened);
+               telemetry.addData("TSELocation", pipeline.TSELocation);
                telemetry.update();
             dashboardTelemetry.update();
            }
@@ -235,7 +243,8 @@ OpenCvCamera TurretCam2;
 
 
 
-
+        //RightCam1.stopStreaming();
+        //RightCam1.closeCameraDevice();
 
         waitForStart();
         //SwitchableWebcam.setActiveCamera(TurretCam1);
@@ -272,7 +281,12 @@ OpenCvCamera TurretCam2;
         rotateSpeed = 2300;
         extendSpeed = 35;
         VPivotSpeed = 12;
-        TSEPos = 3;
+        if(pipeline.TSELocation != 0){
+            TSEPos = pipeline.TSELocation;
+        }else{
+            TSEPos = 3;
+        }
+
         //main loop for the autonomous code
         while (opModeIsActive() && stopProgram == 0) {
 
@@ -448,6 +462,30 @@ OpenCvCamera TurretCam2;
                         breakout = 0;
                         oneLoop = 0;
                         STOPMOTORS = false;
+                        intakeCounter = intakeCounter + 1;
+
+                        if(intakeCounter == 1){
+                            rotateSetpoint = 0;
+                            extendSetpoint = extendSetpoint + 10;
+                        }else if(intakeCounter == 2){
+                            rotateSetpoint = -130;
+                            extendSetpoint = extendSetpoint + 20;
+                        }else if(intakeCounter == 3){
+                            rotateSetpoint = -100;
+                            extendSetpoint = extendSetpoint + 20;
+                        }else if(intakeCounter == 4){
+                            rotateSetpoint = -50;
+                            extendSetpoint = extendSetpoint + 20;
+                        }else if(intakeCounter == 5){
+                            rotateSetpoint = 400;
+                            extendSetpoint = extendSetpoint + 20;
+                        }else if(intakeCounter == 6){
+                            rotateSetpoint = 300;
+                            extendSetpoint = extendSetpoint + 20;
+                        }else if(intakeCounter == 7){
+                            rotateSetpoint = 200;
+                            extendSetpoint = extendSetpoint + 20;
+                        }
                     }
 
                 }
@@ -456,6 +494,8 @@ OpenCvCamera TurretCam2;
 
             }
             else if(action == 3){//intaking
+
+
                 if(oneLoop == 0){//setting variables only once so we can change them if we need to using our failsafe program
                     //setting drivetrain positions and speeds
                     thetaSetpoint = 0;
@@ -465,13 +505,18 @@ OpenCvCamera TurretCam2;
                     decelerationDistance = 7;
                     slowMoveSpeed = 8;
                     slowMovedDistance = 6;
-                    xSetpoint = 32;
+                    xSetpoint = 34.5;
                     ySetpoint = YChangingSet;
                     targetSpeed = 5;
                     leftIntakeSet = .5;
                     rightIntakeSet = -.5;
                     oneLoop = 1;
                     intakeStartTime = getRuntime();
+                    CombinedTurret.trackingRotate = false;
+                    rotateSpeed = 2000;
+                    timepassed = getRuntime();
+                  //  intakeCounter = intakeCounter + 1;
+
 
                 }else{
                     if(DirectionClass.distanceFromReturn() < .8){
@@ -480,38 +525,67 @@ OpenCvCamera TurretCam2;
                         STOPMOTORS = false;
                     }
                 }
-                if(robot.LB_C.alpha() > 800 || robot.RB_C.alpha() > 800 || OdoClass.odoXReturn() > 30){
+                if(robot.LB_C.alpha() > 800 || robot.RB_C.alpha() > 800 || OdoClass.odoXReturn() > 25){
                     hasColorSenssors = true;
                 }
 
-                if(hasColorSenssors ){
-                    cubeDifference = 320 - CubePipline.cubeCenter;
-                    cubeChange = (cubeDifference * CubeTrakingP);
+                if(hasColorSenssors){
 
-                    if(Math.abs(cubeChange) < 8){
-                        cubeChange = 0;
-                    }else if(Math.abs(cubeChange) < 20){
-                        cubeChange = (cubeDifference * CubeTrakingP) * (Math.abs(cubeChange) / 20);
+                 /*   if(getRuntime() - timepassed > .5){
+                        if (Math.abs(CombinedTurret.rotateModifiedEncoder - rotateSetpoint) < 10 && CubePipline.targetX > 0) {
+                            cubeLocationRotateEncoder = (.6555 * (CubePipline.targetX + (CubePipline.targetWidth/2))) - 212;
+                        }else{
+                            cubeLocationRotateEncoder = 0;
+                        }
+                        rotateSetpoint = rotateSetpoint + cubeLocationRotateEncoder;
+                    }else{
+                     rotateSetpoint = 0;
+                    }*/
+
+                    if(intakeCounter == 1){
+                        rotateSetpoint = 0;
+                        extendSetpoint = extendSetpoint + 10;
+                    }else if(intakeCounter == 2){
+                        rotateSetpoint = -130;
+                        extendSetpoint = extendSetpoint + 20;
+                    }else if(intakeCounter == 3){
+                        rotateSetpoint = -100;
+                        extendSetpoint = extendSetpoint + 20;
+                    }else if(intakeCounter == 4){
+                        rotateSetpoint = -50;
+                        extendSetpoint = extendSetpoint + 20;
+                    }else if(intakeCounter == 5){
+                        rotateSetpoint = 400;
+                        extendSetpoint = extendSetpoint + 20;
+                    }else if(intakeCounter == 6){
+                        rotateSetpoint = 300;
+                        extendSetpoint = extendSetpoint + 20;
+                    }else if(intakeCounter == 7){
+                        rotateSetpoint = 200;
+                        extendSetpoint = extendSetpoint + 20;
                     }
 
-                    rotateSetpoint = rotateSetpoint - cubeChange;
-                    if(CubePipline.cubeCenter > 305 && CubePipline.cubeCenter < 325 && extendSetpoint < 800 || getRuntime() > intakeStartTime + 3){
-                        extendSetpoint = extendSetpoint + 20;
-                    }else if(extendSetpoint > 800){
-                        extendSetpoint = 230;
+
+
+                    if(extendSetpoint > 800){
+                        extendSetpoint = 300;
                         rotateSetpoint = 0;
                         VPivotSetpoint = 500;
+                        intakeCounter = intakeCounter + 1;
                     }
                     robot.RI_S.setPower(-.5);
                     robot.LI_S.setPower(.5);
                 }else{
-                    //rotateSetpoint = 0;
+
                 }
 
 
 
                 if(robot.I_DS.getDistance(DistanceUnit.INCH) < 1 && breakout == 1){
                     action = 4;
+                    CombinedTurret.trackingRotate = false;
+                    rotateSpeed = 2300;
+                    extendSetpoint = 200;
                     hasColorSenssors = false;
                     STOPMOTORS = false;
                     oneLoop = 0;
@@ -522,6 +596,7 @@ OpenCvCamera TurretCam2;
                     breakout = 0;
                     rightIntakeSet = 0;
                    leftIntakeSet = 0;
+
                 }else{
                     breakout = 1;
                 }
@@ -751,6 +826,8 @@ OpenCvCamera TurretCam2;
         //telemetry.addData("stuck Fix TImer", stuckFixTimer + 3);
         telemetry.addData("leftIntakeSet", leftIntakeSet);
         telemetry.addData("Extend Encoder", CombinedTurret.extendModifiedEncoder);
+        telemetry.addData("CubeX", CubePipline.targetX);
+        telemetry.addData("rotate Set", rotateSetpoint);
 
 
        // telemetry.addData("PT", robot.TP_P.getVoltage());
@@ -853,10 +930,14 @@ OpenCvCamera TurretCam2;
 
                 Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
 
-                Scalar scalarLowerYCrCb = new Scalar(Hmin, Smin, Vmin);
-                Scalar scalarUpperYCrCb = new Scalar(Hmax, Smax, Vmax);
-                //Scalar scalarLowerYCrCb = new Scalar(15.0, 100.0, 120.0);
-                //Scalar scalarUpperYCrCb = new Scalar(45.0, 255.0, 255.0);
+                //Scalar scalarLowerYCrCb = new Scalar(TSEHmin, TSESmin, TSEVmin);//for adjusting
+                //Scalar scalarUpperYCrCb = new Scalar(TSEHmax, TSESmax, TSEVmax);//for adjusting
+                Scalar scalarLowerYCrCb = new Scalar(30.0, 120.0, 100.0);//GREEN
+                Scalar scalarUpperYCrCb = new Scalar(78.0, 255.0, 255.0);//GREEN
+                //Scalar scalarLowerYCrCb = new Scalar(130.0, 0.0, 50.0);//Purple
+                //Scalar scalarUpperYCrCb = new Scalar(180.0, 255.0, 255.0);//Purple
+            // min 0,0,0
+            // Max 180, 255,255
                 Mat maskRed = new Mat();
                 //BLUE DO NOT REMOVE
                 //Scalar scalarLowerYCrCb = new Scalar(80.0, 70.0, 100.0);
@@ -871,24 +952,27 @@ OpenCvCamera TurretCam2;
 
 
                 Imgproc.findContours(maskRed, redContours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-                Imgproc.drawContours(input, redContours, -1, GOLD); //input
+                Imgproc.drawContours(input, redContours, -1, AQUA); //input
 
 
                 yLowest = -640;
                 indexLowest = 0;
+                Imgproc.rectangle(input, new Point(100, 225), new Point(210,375), AQUA);
+                Imgproc.rectangle(input, new Point(210, 225), new Point(340, 375), PARAKEET);
+                Imgproc.rectangle(input, new Point(340, 225), new Point(480, 375), GOLD);
 
                 if (redContours.size() > 0) {
                     for (int i = 0; i < redContours.size(); i++) {
                         if (filterContours(redContours.get(i))) {
                             redMask = Imgproc.boundingRect(redContours.get(i));
-                            Imgproc.rectangle(input, redMask, GOLD, 10);
+                            Imgproc.rectangle(input, redMask, AQUA, 10);
 
                             if (redMask.y + redMask.height > 100 && redMask.y + redMask.height < 400) {
-                                if (redMask.x + redMask.width > 200 && redMask.x + redMask.width < 300) {
+                                if (redMask.x + (redMask.width /2)> 100 && redMask.x + (redMask.width /2) < 210) {
                                     TSELocation = 1;
-                                } else if (redMask.x + redMask.width > 300 && redMask.x + redMask.width < 400) {
+                                } else if (redMask.x + (redMask.width /2) > 210 && redMask.x + (redMask.width /2) < 340) {
                                     TSELocation = 2;
-                                } else if (redMask.x + redMask.width > 400 && redMask.x + redMask.width < 480) {
+                                } else if (redMask.x + (redMask.width /2) > 340 && redMask.x + (redMask.width /2) < 480) {
                                     TSELocation = 3;
                                 }
                             }
@@ -972,6 +1056,19 @@ OpenCvCamera TurretCam2;
 
             Imgproc.findContours(maskCube, CubeContours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
             Imgproc.drawContours(input, CubeContours, -1, AQUA); //input
+      /*      Imgproc.rectangle(input, new Point(0,0), new Point(50,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(50,0), new Point(100,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(100,0), new Point(150,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(150,0), new Point(200,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(200,0), new Point(250,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(250,0), new Point(300,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(300,0), new Point(350,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(350,0), new Point(400,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(400,0), new Point(450,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(450,0), new Point(500,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(500,0), new Point(550,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(550,0), new Point(600,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(600,0), new Point(640,480), GOLD, -1);*/
 
 
             yLowest = -640;
@@ -983,7 +1080,7 @@ OpenCvCamera TurretCam2;
                         CubeMask = Imgproc.boundingRect(CubeContours.get(i));
                         Imgproc.rectangle(input, CubeMask, AQUA, 2);
 
-                        if(Math.abs((CubeMask.y + CubeMask.height) - yLowest) < 80){
+                        if(Math.abs((CubeMask.y + CubeMask.height) - yLowest) < 20){
                             if(CubeMask.x + CubeMask.width > yLeft){
                                 indexLowest = i;
                                 yLowest = CubeMask.y + CubeMask.height;
@@ -1014,9 +1111,6 @@ OpenCvCamera TurretCam2;
             }
 
 
-
-
-
             YCrCb.release();
             RGBA.release();
             HSV.release();
@@ -1026,8 +1120,6 @@ OpenCvCamera TurretCam2;
             return input;
         }
     }
-
-
 
 }
 

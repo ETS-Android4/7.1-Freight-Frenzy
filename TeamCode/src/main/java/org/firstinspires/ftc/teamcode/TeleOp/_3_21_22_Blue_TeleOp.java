@@ -79,8 +79,8 @@ public class _3_21_22_Blue_TeleOp extends LinearOpMode{
                 robot.RI_S.setPower(-.5);
                 robot.LI_S.setPower(.5);
             }else if(gamepad1.b || gamepad2.b || gamepad1.left_bumper){//outtake
-                robot.RI_S.setPower(.4);
-                robot.LI_S.setPower(-.4);
+                robot.RI_S.setPower(.3);
+                robot.LI_S.setPower(-.3);
             }else{//servos off
                 robot.RI_S.setPower(0);
                 robot.LI_S.setPower(0);
@@ -116,10 +116,10 @@ public class _3_21_22_Blue_TeleOp extends LinearOpMode{
                     }
 
                 }else if(gamepad2.dpad_left || gamepad1.dpad_left){//Shared shipping hub intake position
-                    teleOpVPivotSet = 800;
-                    if (CombinedTurret.vPivotModifiedEncoder > 700) {
+                    teleOpVPivotSet = 700;
+                    if (CombinedTurret.vPivotModifiedEncoder > 600) {
                         teleOpRotateSet = intakeRotateSet -1700;
-                        teleOpExtendSet = 0;
+                        teleOpExtendSet = -40;
                     }
 
                 }else if(gamepad2.dpad_up || gamepad1.dpad_up){//Mid alliance hub scoring position
