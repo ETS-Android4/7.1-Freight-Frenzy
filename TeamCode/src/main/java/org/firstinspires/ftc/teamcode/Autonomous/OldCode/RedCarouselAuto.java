@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Autonomous;
+package org.firstinspires.ftc.teamcode.Autonomous.OldCode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -25,8 +25,8 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-@Autonomous
-public class BlueCarouselAuto extends LinearOpMode {
+//@Autonomous
+public class RedCarouselAuto extends LinearOpMode {
     FreightFrenzyHardwareMap robot = new FreightFrenzyHardwareMap();
     SpeedClass SpeedClass = new SpeedClass();
     DirectionCalcClass DirectionClass = new DirectionCalcClass();
@@ -94,7 +94,7 @@ public class BlueCarouselAuto extends LinearOpMode {
     public void runOpMode() {
         robot.init(hardwareMap);
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Right Cam"), cameraMonitorViewId);
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "LeftCam"), cameraMonitorViewId);
 
         //allows to call pipline
         pipeline = new OpenCVPipeline();
@@ -121,13 +121,13 @@ public class BlueCarouselAuto extends LinearOpMode {
 
             VPivotSetpoint = 900;
             VPivotSpeed = 10;
-            if(Math.abs(0 - CombinedTurret.extendModifiedEncoder) < 50 && Math.abs(400 - CombinedTurret.rotateModifiedEncoder) < 50){
+            if(Math.abs(0 - CombinedTurret.extendModifiedEncoder) < 50 && Math.abs(-600 - CombinedTurret.rotateModifiedEncoder) < 50){
                 VPivotSetpoint = 570;
             }else if(VPivotSetpoint > 850){
                 extendSetpoint = -30;
                 extendSpeed = 15;
-                rotateSetpoint = 420;
-                rotateSpeed = 600;
+                rotateSetpoint = -620;
+                rotateSpeed = 1000;
             }
 
             CombinedTurret.TurretCombinedMethod(extendSetpoint,extendSpeed,rotateSetpoint,rotateSpeed, VPivotSetpoint,VPivotSpeed, robot.TE_M.getCurrentPosition(), robot.TE_G.getState(), robot.TR_M.getCurrentPosition(), robot.TR_G.getState(), robot.TP_M.getCurrentPosition(), robot.TP_G.getState());
@@ -140,14 +140,14 @@ public class BlueCarouselAuto extends LinearOpMode {
                 TSERegionThreshold = TSERegionThreshold - 1;
             }
             if (pipeline.region1Avg() <= TSERegionThreshold) {
-                TSEPos = 2;
-                telemetry.addData("TSE", 2);
-            } else if (pipeline.region2Avg() <= TSERegionThreshold) {
-                TSEPos = 3;
-                telemetry.addData("TSE", 3);
-            } else {
                 TSEPos = 1;
                 telemetry.addData("TSE", 1);
+            } else if (pipeline.region2Avg() <= TSERegionThreshold) {
+                TSEPos = 2;
+                telemetry.addData("TSE", 2);
+            } else {
+                TSEPos = 3;
+                telemetry.addData("TSE", 3);
             }
             telemetry.addData("region2", pipeline.region1Avg());
             telemetry.addData("region3", pipeline.region2Avg());
@@ -186,12 +186,12 @@ public class BlueCarouselAuto extends LinearOpMode {
                 slowMovedDistance = 2;
                 thetaDeccelerationDegree = .5;
                 thetaTargetSpeed = 3;
-                xSetpoint = -13;
-                ySetpoint = 6;
+                xSetpoint = -14;
+                ySetpoint = -6;
                 thetaSetpoint = 0;
                 targetSpeed = 12.5;
                 if(CombinedTurret.vPivotModifiedEncoder >= 2200){
-                    rotateSetpoint = 2000;
+                    rotateSetpoint = 460;
                 }
                 if(DirectionClass.distanceFromReturn() <= .5 && breakout == 1){
                     action = 2;
@@ -211,7 +211,7 @@ public class BlueCarouselAuto extends LinearOpMode {
                    loopcount = 0;
                }
                if(timepassed >= getRuntime()){
-                   robot.TC_M.setPower(-.3);
+                   robot.TC_M.setPower(.3);
                }
                else{
                    nextMove = 1;
@@ -229,7 +229,7 @@ public class BlueCarouselAuto extends LinearOpMode {
                 }
             }
             else if(action == 3){ //Move to carousel position
-                rotateSetpoint = 450;
+                rotateSetpoint = -550;
                 if(TSEPos == 1){
                     VPivotSetpoint = 1000;
                 }
@@ -241,7 +241,7 @@ public class BlueCarouselAuto extends LinearOpMode {
                 }
                 targetSpeed = 20;
                xSetpoint = 0;
-               ySetpoint = 15;
+               ySetpoint = -15;
 
                 if(DirectionClass.distanceFromReturn() <= .5 && breakout == 1){
                     action = 4;
@@ -302,12 +302,12 @@ public class BlueCarouselAuto extends LinearOpMode {
 
             targetSpeed = 15;
             xSetpoint = -18.5;
-            rotateSetpoint = 800;
+            rotateSetpoint = 400;
             if(loopcount == 0){
-                timepassed = getRuntime() + 6;
+                timepassed = getRuntime() + 4;
                 loopcount = 1;
             }
-            ySetpoint = 27;
+            ySetpoint = -32;
             if(DirectionClass.distanceFromReturn() <= 1){
                 VPivotSetpoint = 700;
                 extendSetpoint = 0;
@@ -328,226 +328,7 @@ public class BlueCarouselAuto extends LinearOpMode {
             }
         }
 
-            /*
 
-
-            if(action == 1) {//dropping in correct level
-                if (TSEPos == 3) {
-                    rotateSetpoint = 1400;
-                    extendSetpoint = 0;
-                    VPivotSetpoint = 1450;
-                    if (DirectionClass.distanceFromReturn() <= .7) {
-                        StopMotors();
-                    }
-                    if ((CombinedTurret.vPivotModifiedEncoder >= 875)) {
-                        extendSetpoint = 1250;
-                        if (CombinedTurret.extendModifiedEncoder <= 1300 && CombinedTurret.extendModifiedEncoder >= 1200) {
-                            if (loopcount == 0) {
-                                loopcount = 1;
-                                timepassed = getRuntime() + 4;
-                            }
-                            leftIntakeSet = -0.5;
-                            rightIntakeSet = 0.5;
-                            if (robot.I_DS.getDistance(DistanceUnit.INCH) >= 1 || getRuntime() > timepassed) {
-                                StopMotors();
-                                action = 2;
-                                startPointY = OdoClass.odoYReturn();
-                                startPointX = OdoClass.odoXReturn();
-                                leftIntakeSet = 0;
-                                rightIntakeSet = 0;
-                                breakout = 0;
-                            }
-                        }
-                    }
-                }else if (TSEPos == 2) {
-                    rotateSetpoint = 1400;
-                    extendSetpoint = 0;
-                    VPivotSetpoint = 1200;
-                    if (DirectionClass.distanceFromReturn() <= .7) {
-                        StopMotors();
-                    }
-                    if (CombinedTurret.vPivotModifiedEncoder >= 875) {
-                        extendSetpoint = 1200;
-                        if (CombinedTurret.extendModifiedEncoder <= 1250 && CombinedTurret.extendModifiedEncoder >= 1180) {
-                            if(loopcount == 0){
-                                loopcount = 1;
-                                timepassed = getRuntime() + 4;
-                            }
-                            leftIntakeSet = -.5;
-                            rightIntakeSet = .5;
-                            if (robot.I_DS.getDistance(DistanceUnit.INCH) >= 1 || getRuntime() > timepassed) {
-                                StopMotors();
-                                action = 2;
-                                startPointY = OdoClass.odoYReturn();
-                                startPointX = OdoClass.odoXReturn();
-                                leftIntakeSet = 0;
-                                rightIntakeSet = 0;
-                                breakout = 0;
-                            }
-                        }
-                    }
-                }else if (TSEPos == 1) {
-                    rotateSetpoint = 1400;
-                    extendSetpoint = 0;
-                    VPivotSetpoint = 950;
-                    if (DirectionClass.distanceFromReturn() <= .7) {
-                        StopMotors();
-                    }
-                    if (CombinedTurret.vPivotModifiedEncoder >= 875) {
-                        extendSetpoint = 1200;
-                        if (CombinedTurret.extendModifiedEncoder <= 1250 && CombinedTurret.extendModifiedEncoder >= 1180) {
-                            if(loopcount == 0){
-                                loopcount = 1;
-                                timepassed = getRuntime() + 4;
-                            }
-                            leftIntakeSet = -.5;
-                            rightIntakeSet = .5;
-                            if (robot.I_DS.getDistance(DistanceUnit.INCH) >= 1 || getRuntime() > timepassed) {
-                                StopMotors();
-                                action = 2;
-                                startPointY = OdoClass.odoYReturn();
-                                startPointX = OdoClass.odoXReturn();
-                                leftIntakeSet = 0;
-                                rightIntakeSet = 0;
-                                breakout = 0;
-                            }
-                        }
-                    }
-                }
-            }
-            else if(action == 2){//intaking
-                //setting the intake position using a safe path to prevent collisions
-                extendSetpoint = 275;
-                extendSpeed = 30;
-                if(CombinedTurret.extendModifiedEncoder < 600){
-                    rotateSpeed = 2000;
-                    rotateSetpoint = 0;
-                }
-
-                if(Math.abs(extendSetpoint - CombinedTurret.extendModifiedEncoder) < 300 && Math.abs(rotateSetpoint - CombinedTurret.rotateModifiedEncoder) < 450){
-                      VPivotSetpoint = 400;
-                      VPivotSpeed = 25;
-                  }else{
-                      VPivotSetpoint = 1000;
-                      VPivotSpeed = 10;
-                  }
-
-                //setting drivetrain positions and speeds
-
-                thetaSetpoint = 0;
-                accelerationDistance = 0;
-                decelerationDistance = 7;
-                slowMoveSpeed = 8;
-                slowMovedDistance = 6;
-                thetaDeccelerationDegree = 2;
-                thetaTargetSpeed = 1;
-                xSetpoint = IntakeXSetpoint;
-                ySetpoint = YChangingSet;
-                thetaSetpoint = 0;
-                targetSpeed = 20;
-                leftIntakeSet = .5;
-                rightIntakeSet = -.5;
-
-
-                if(robot.I_DS.getDistance(DistanceUnit.INCH) < 1 && breakout == 1|| DirectionClass.distanceFromReturn() <= .7 && breakout == 1){
-                    action = 3;
-
-                    StopMotors();
-                    startPointX = OdoClass.odoXReturn();
-                    startPointY = OdoClass.odoYReturn();
-                    breakout = 0;
-                    rightIntakeSet = 0;
-                    leftIntakeSet = 0;
-                }else{
-                    breakout = 1;
-                }
-
-            }else if(action == 3){//Decision to drop freight or to stop
-                timeRemaining = 30 - (getRuntime() - startTime);
-                if(timeRemaining > 8){
-                    action = 4;
-                }else{
-                    action = 5;
-                }
-                startPointX = OdoClass.odoXReturn();
-                startPointY = OdoClass.odoYReturn();
-                loopcount = 0;
-            } else if (action == 4) {//dropping freight in top goal
-                thetaSetpoint = 0;
-                accelerationDistance = 0;
-                decelerationDistance = 8;
-                slowMoveSpeed = 1;
-                slowMovedDistance = 3;
-                thetaDeccelerationDegree = 2;
-                thetaTargetSpeed = 1;
-                xSetpoint = 0;
-                ySetpoint = YChangingSet;
-                thetaSetpoint = 0;
-                targetSpeed = 40;
-
-
-
-                VPivotSetpoint = 1450;
-
-                if ((CombinedTurret.vPivotModifiedEncoder >= 875)) {
-                    rotateSetpoint = 1400;
-                    if(CombinedTurret.rotateModifiedEncoder > 1000){
-                        extendSetpoint = 1250;
-                    }
-                    if ((CombinedTurret.extendModifiedEncoder <= 1300 && CombinedTurret.extendModifiedEncoder >= 1200) && DirectionClass.distanceFromReturn() <= 2) {
-                        if (loopcount == 0) {
-                            loopcount = 1;
-                            timepassed = getRuntime() + 4;
-                        }
-                        leftIntakeSet = -.5;
-                        rightIntakeSet = .5;
-
-                        if (robot.I_DS.getDistance(DistanceUnit.INCH) >= 1 || getRuntime() > timepassed) {
-                            StopMotors();
-                            action = 2;
-                            startPointY = OdoClass.odoYReturn();
-                            startPointX = OdoClass.odoXReturn();
-                            leftIntakeSet = 0;
-                            rightIntakeSet = 0;
-                        }
-                    }
-                }
-
-
-            } else if (action == 5) {
-                extendSetpoint = 200;
-                extendSpeed = 20;
-                rotateSpeed = 1500;
-                rotateSetpoint = 0;
-                VPivotSetpoint = 800;
-                VPivotSpeed = 8;
-
-                thetaSetpoint = 0;
-                accelerationDistance = .25;
-                decelerationDistance = 7.5;
-                slowMoveSpeed = 1;
-                slowMovedDistance = 2;
-                thetaDeccelerationDegree = 2;
-                thetaTargetSpeed = 1;
-                xSetpoint = 41;
-                ySetpoint = YChangingSet;
-                thetaSetpoint = 0;
-                targetSpeed = 18;
-                if (DirectionClass.distanceFromReturn() <= 1.3 && breakout != 0) {
-                    StopMotors();
-                    breakout = 0;
-                    action = 6;
-                    startPointX = OdoClass.odoXReturn();
-                    startPointY = OdoClass.odoYReturn();
-                } else {
-                    breakout = 1;
-                }
-            }
-
-
-
-
-             */
 
             //If nothing else to do, stop the program
             else {
@@ -568,7 +349,7 @@ public class BlueCarouselAuto extends LinearOpMode {
 
 
              */
-            if(DirectionClass.distanceFromReturn() <= .75){
+            if(DirectionClass.distanceFromReturn() <= 1){
                 STOPMOTORS = true;
             }
             else{
@@ -671,11 +452,11 @@ public class BlueCarouselAuto extends LinearOpMode {
        static final Scalar AQUA = new Scalar(79, 195, 247);
       // static final Scalar PARAKEET = new Scalar(3, 192, 74);
 
-        //sets the boxes where we will look
-        static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(260, 255);
+       //sets the boxes where we will look
+       static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(285, 218);
        static int REGION1_WIDTH = 30;
        static int REGION1_HEIGHT = 80;
-       static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(395, 255);
+       static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(425, 218);
        static final int REGION2_WIDTH = 30;
        static final int REGION2_HEIGHT = 80;
         //static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(430, 260);

@@ -90,14 +90,55 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                 robot.RI_S.setPower(0);
                 robot.LI_S.setPower(0);
             }
-
+             teleOpExtendSpeedSet = 38;
+            teleOpRotateSpeedSet = 2500;
+            teleOpVPivotSpeedSet = 18;
                                 //turret Presets
                 if(gamepad2.y || gamepad1.y){//Resetting our intake position in case of any encoder drift
                     intakeVPivotSet = CombinedTurret.vPivotModifiedEncoder;
                     intakeExtendSet = CombinedTurret.extendModifiedEncoder;
                     intakeRotateSet = CombinedTurret.rotateModifiedEncoder;
 
-                }else if(gamepad2.dpad_right || gamepad1.dpad_right) {//Alliance hub dropping preset
+                }else if(gamepad2.left_bumper){
+                    if(gamepad2.dpad_down){
+                        teleOpExtendSpeedSet = 25;
+                        teleOpRotateSpeedSet = 2500;
+                        teleOpVPivotSpeedSet = 18;
+                        teleOpVPivotSet = 900;
+                        if(CombinedTurret.vPivotModifiedEncoder > 800){
+                            teleOpRotateSet = intakeRotateSet;
+                            teleOpExtendSet = intakeExtendSet;
+                        }
+                        if(Math.abs(teleOpRotateSet - CombinedTurret.rotateModifiedEncoder) < 100 && Math.abs(teleOpExtendSet - CombinedTurret.extendModifiedEncoder) < 100){
+                            teleOpVPivotSet = 820;
+                        }
+                    }else if(gamepad2.dpad_up){
+                        teleOpVPivotSpeedSet = 10;
+                        teleOpRotateSpeedSet = 1000;
+                        teleOpExtendSpeedSet = 25;
+                        teleOpVPivotSet = 2000;
+                        if(CombinedTurret.vPivotModifiedEncoder > 900){
+                            teleOpExtendSet = 300;
+                        }
+
+                    }else{
+                        teleOpVPivotSpeedSet = 10;
+                        teleOpRotateSpeedSet = 1000;
+                        teleOpExtendSpeedSet = 25;
+                        teleOpExtendSet = teleOpExtendSet - Smoothing.SmoothExtend(gamepad2.right_stick_y * 30);
+
+                        rotateChange = Smoothing.SmoothRotate(gamepad2.right_trigger * 25);
+                        //rotateChange = gamepad2.right_trigger * 40;
+                        //rotateChangeLeft = gamepad2.left_trigger * -40;
+
+                        rotateChangeLeft = Smoothing.SmoothRotateLeft(gamepad2.left_trigger * -25);
+
+                        teleOpRotateSet = teleOpRotateSet + rotateChange + rotateChangeLeft;
+
+                        teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -20);
+                    }
+
+                } else if(gamepad2.dpad_right || gamepad1.dpad_right) {//Alliance hub dropping preset
                     teleOpVPivotSet = 1550;
                     if (CombinedTurret.vPivotModifiedEncoder > 1000) {
                         teleOpRotateSet = intakeRotateSet - 1450;
@@ -150,7 +191,7 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                     teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -30);
 
                 }
-            if(gamepad2.right_bumper || gamepad2.left_bumper) {//carousel stuff
+            if(gamepad2.right_bumper) {//carousel stuff
                 teleOpVPivotSet = 2550;
                 if(CombinedTurret.vPivotModifiedEncoder > 800){
                     teleOpExtendSet = 0;

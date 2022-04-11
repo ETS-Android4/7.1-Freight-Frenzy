@@ -142,7 +142,7 @@ OpenCvCamera TurretCam2;
 
 
 
-    /*    RightCam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+        RightCam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             //starts the webcam and defines the pixels
             public void onOpened() {
@@ -169,8 +169,8 @@ OpenCvCamera TurretCam2;
                 /*
                  * This will be called if the camera could not be opened
 `               */
-          //  }
-        //});
+           }
+        });
 
         TurretCam2.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
@@ -239,16 +239,7 @@ OpenCvCamera TurretCam2;
             dashboardTelemetry.update();
            }
 
-
-
-
-
-        //RightCam1.stopStreaming();
-        //RightCam1.closeCameraDevice();
-
         waitForStart();
-        //SwitchableWebcam.setActiveCamera(TurretCam1);
-
 
         //resets encoders to ensure an accurate autonomous
         robot.LF_M.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -422,10 +413,10 @@ OpenCvCamera TurretCam2;
                     thetaDeccelerationDegree = 2;
                     thetaTargetSpeed = 4.5;
                     accelerationDistance = 0;
-                    decelerationDistance = 7;
+                    decelerationDistance = 4;
                     slowMoveSpeed = 2;
-                    slowMovedDistance = 6;
-                    targetSpeed = 40;
+                    slowMovedDistance = 2;
+                    targetSpeed = 45;
                     action2TimeSafe = getRuntime();
                     oneLoop = 1;
                     STOPMOTORS = false;
@@ -466,25 +457,18 @@ OpenCvCamera TurretCam2;
 
                         if(intakeCounter == 1){
                             rotateSetpoint = 0;
-                            extendSetpoint = extendSetpoint + 10;
                         }else if(intakeCounter == 2){
-                            rotateSetpoint = -130;
-                            extendSetpoint = extendSetpoint + 20;
+                            rotateSetpoint = -230;
                         }else if(intakeCounter == 3){
                             rotateSetpoint = -100;
-                            extendSetpoint = extendSetpoint + 20;
                         }else if(intakeCounter == 4){
                             rotateSetpoint = -50;
-                            extendSetpoint = extendSetpoint + 20;
                         }else if(intakeCounter == 5){
                             rotateSetpoint = 400;
-                            extendSetpoint = extendSetpoint + 20;
                         }else if(intakeCounter == 6){
                             rotateSetpoint = 300;
-                            extendSetpoint = extendSetpoint + 20;
                         }else if(intakeCounter == 7){
                             rotateSetpoint = 200;
-                            extendSetpoint = extendSetpoint + 20;
                         }
                     }
 
@@ -504,10 +488,10 @@ OpenCvCamera TurretCam2;
                     accelerationDistance = 0;
                     decelerationDistance = 7;
                     slowMoveSpeed = 8;
-                    slowMovedDistance = 6;
-                    xSetpoint = 34.5;
+                    slowMovedDistance = 2;
+                    xSetpoint = 31;
                     ySetpoint = YChangingSet;
-                    targetSpeed = 5;
+                    targetSpeed = 20;
                     leftIntakeSet = .5;
                     rightIntakeSet = -.5;
                     oneLoop = 1;
@@ -525,11 +509,11 @@ OpenCvCamera TurretCam2;
                         STOPMOTORS = false;
                     }
                 }
-                if(robot.LB_C.alpha() > 800 || robot.RB_C.alpha() > 800 || OdoClass.odoXReturn() > 25){
+                if(robot.LB_C.alpha() > 800 || robot.RB_C.alpha() > 800 || OdoClass.odoXReturn() > 16.5){
                     hasColorSenssors = true;
                 }
 
-                if(hasColorSenssors){
+                if(hasColorSenssors ){
 
                  /*   if(getRuntime() - timepassed > .5){
                         if (Math.abs(CombinedTurret.rotateModifiedEncoder - rotateSetpoint) < 10 && CubePipline.targetX > 0) {
@@ -546,30 +530,30 @@ OpenCvCamera TurretCam2;
                         rotateSetpoint = 0;
                         extendSetpoint = extendSetpoint + 10;
                     }else if(intakeCounter == 2){
-                        rotateSetpoint = -130;
-                        extendSetpoint = extendSetpoint + 20;
+                        rotateSetpoint = -230;
+                        extendSetpoint = extendSetpoint + 18;
                     }else if(intakeCounter == 3){
                         rotateSetpoint = -100;
-                        extendSetpoint = extendSetpoint + 20;
+                        extendSetpoint = extendSetpoint + 18;
                     }else if(intakeCounter == 4){
                         rotateSetpoint = -50;
-                        extendSetpoint = extendSetpoint + 20;
+                        extendSetpoint = extendSetpoint + 18;
                     }else if(intakeCounter == 5){
                         rotateSetpoint = 400;
-                        extendSetpoint = extendSetpoint + 20;
+                        extendSetpoint = extendSetpoint + 18;
                     }else if(intakeCounter == 6){
                         rotateSetpoint = 300;
-                        extendSetpoint = extendSetpoint + 20;
+                        extendSetpoint = extendSetpoint + 18;
                     }else if(intakeCounter == 7){
                         rotateSetpoint = 200;
-                        extendSetpoint = extendSetpoint + 20;
+                        extendSetpoint = extendSetpoint + 18;
                     }
 
 
 
                     if(extendSetpoint > 800){
                         extendSetpoint = 300;
-                        rotateSetpoint = 0;
+                        //rotateSetpoint = 0;
                         VPivotSetpoint = 500;
                         intakeCounter = intakeCounter + 1;
                     }
@@ -603,7 +587,7 @@ OpenCvCamera TurretCam2;
 
             }else if(action == 4){//Decision to drop freight or to stop
                 timeRemaining = 30 - (getRuntime() - startTime);
-                if(timeRemaining > 5){
+                if(timeRemaining > 4){
                     action = 5;
                 }else{
                     action = 6;
@@ -614,7 +598,7 @@ OpenCvCamera TurretCam2;
             } else if (action == 5) {//dropping freight in top goal
                 thetaSetpoint = 0;
                 accelerationDistance = 0;
-                decelerationDistance = 20;
+                decelerationDistance = 15;
                 slowMoveSpeed = 1;
                 slowMovedDistance = 10;
                 thetaDeccelerationDegree = 3;
@@ -932,7 +916,7 @@ OpenCvCamera TurretCam2;
 
                 //Scalar scalarLowerYCrCb = new Scalar(TSEHmin, TSESmin, TSEVmin);//for adjusting
                 //Scalar scalarUpperYCrCb = new Scalar(TSEHmax, TSESmax, TSEVmax);//for adjusting
-                Scalar scalarLowerYCrCb = new Scalar(30.0, 120.0, 100.0);//GREEN
+                Scalar scalarLowerYCrCb = new Scalar(30.0, 120.0, 75.0);//GREEN
                 Scalar scalarUpperYCrCb = new Scalar(78.0, 255.0, 255.0);//GREEN
                 //Scalar scalarLowerYCrCb = new Scalar(130.0, 0.0, 50.0);//Purple
                 //Scalar scalarUpperYCrCb = new Scalar(180.0, 255.0, 255.0);//Purple

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
+import static org.opencv.core.Core.inRange;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -16,6 +18,7 @@ import org.firstinspires.ftc.teamcode.GeneralRobotCode.FreightFrenzyHardwareMap;
 import org.firstinspires.ftc.teamcode.TurretClasses.TurretCombined;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -25,8 +28,11 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Autonomous
-public class RedCarouselAuto extends LinearOpMode {
+public class NEWRedCarouselAuto extends LinearOpMode {
     FreightFrenzyHardwareMap robot = new FreightFrenzyHardwareMap();
     SpeedClass SpeedClass = new SpeedClass();
     DirectionCalcClass DirectionClass = new DirectionCalcClass();
@@ -37,6 +43,7 @@ public class RedCarouselAuto extends LinearOpMode {
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     //Uses Vuforia Developer Code
     //Declares Varibles
+    public static double Hmin = 15, Hmax = 50, Smin = 150, Smax = 255, Vmin = 150, Vmax = 255 ;
     double breakout;
     double lastAction = 0;
     double intakeXSetMod = 1;
@@ -53,6 +60,7 @@ public class RedCarouselAuto extends LinearOpMode {
     double ySetpoint;
     double turnIncriments;
     double onlyDriveMotors;
+    boolean OneLoop = false;
     double thetaSetpoint;
     double loopcount;
     double accelerationDistance;
@@ -87,33 +95,89 @@ public class RedCarouselAuto extends LinearOpMode {
 
     double action;
     double initPOsitionOrder = 1;
-    OpenCvCamera webcam;
-    static OpenCVPipeline pipeline;
+boolean TSECamOpened = false, TurretCamOpened = false;
+
+    static CubeTracking_Pipeline CubePipline;
+
+    static OpenCV_Pipeline pipeline;
+    OpenCvCamera LeftCam1;
+    OpenCvCamera TurretCam2;
     @Override
 
     public void runOpMode() {
         robot.init(hardwareMap);
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "LeftCam"), cameraMonitorViewId);
+
+        int[] viewportContainerIds = OpenCvCameraFactory.getInstance().splitLayoutForMultipleViewports(cameraMonitorViewId, 2,OpenCvCameraFactory.ViewportSplitMethod.VERTICALLY);
+        // SwitchableWebcam = OpenCvCameraFactory.getInstance().createSwitchableWebcam(cameraMonitorViewId, RightCam, TurretCam1);
+        TurretCam2 = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "TurretCam1"), viewportContainerIds[0]);
+        LeftCam1 = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "LeftCam"), viewportContainerIds[1]);
+
 
         //allows to call pipline
-        pipeline = new OpenCVPipeline();
-        //sets the webcam to the pipeline
-        webcam.setPipeline(pipeline);
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+        pipeline = new OpenCV_Pipeline();
+        CubePipline = new CubeTracking_Pipeline();
+
+        LeftCam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             //starts the webcam and defines the pixels
             public void onOpened() {
-                webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
-            }
 
+                LeftCam1.setPipeline(pipeline);
+                TSECamOpened = true;
+
+
+                LeftCam1.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+                //gives FTC dashboard acess to the camera
+                FtcDashboard.getInstance().startCameraStream(LeftCam1, 10);
+                telemetry.addData("TSECameraOpened", "");
+                telemetry.update();
+
+
+
+
+            }
+            //if the camera errors this happens
             @Override
             public void onError(int errorCode) {
+                telemetry.addData("TSEcameraNotOpened", 000000000000000000000000000000000000000000000000000000);
+                telemetry.update();
                 /*
                  * This will be called if the camera could not be opened
 `               */
             }
         });
+
+     /*   TurretCam2.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            //starts the webcam and defines the pixels
+            public void onOpened() {
+
+                TurretCam2.setPipeline(CubePipline);
+                TurretCamOpened = true;
+
+
+                TurretCam2.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+                //gives FTC dashboard acess to the camera
+                FtcDashboard.getInstance().startCameraStream(TurretCam2, 10);
+                telemetry.addData("TURRETCameraOpened", "");
+                telemetry.update();
+
+
+
+
+            }
+
+            //if the camera errors this happens
+            @Override
+            public void onError(int errorCode) {
+                telemetry.addData("TURRETcameraNotOpened", 000000000000000000000000000000000000000000000000000000);
+                telemetry.update();
+                /*
+                 * This will be called if the camera could not be opened
+`               */
+         //   }
+        //});
         telemetry.update();
         //Depending on the ring stack we change our intake to diffrent heights to be able to reach the top of the stack
         //Enters our 1 loop system, will exit once all actions are done
@@ -122,7 +186,7 @@ public class RedCarouselAuto extends LinearOpMode {
             VPivotSetpoint = 900;
             VPivotSpeed = 10;
             if(Math.abs(0 - CombinedTurret.extendModifiedEncoder) < 50 && Math.abs(-600 - CombinedTurret.rotateModifiedEncoder) < 50){
-                VPivotSetpoint = 570;
+                VPivotSetpoint = 630;
             }else if(VPivotSetpoint > 850){
                 extendSetpoint = -30;
                 extendSpeed = 15;
@@ -134,30 +198,17 @@ public class RedCarouselAuto extends LinearOpMode {
             robot.TR_M.setPower(CombinedTurret.rotateFinalMotorPower);
             robot.TE_M.setPower(CombinedTurret.extendFinalMotorPower);
             robot.TP_M.setPower(CombinedTurret.vPivotFinalMotorPower);
-            if(gamepad1.dpad_up){
-                TSERegionThreshold = TSERegionThreshold + 1;
-            }else if(gamepad1.dpad_down){
-                TSERegionThreshold = TSERegionThreshold - 1;
-            }
-            if (pipeline.region1Avg() <= TSERegionThreshold) {
-                TSEPos = 1;
-                telemetry.addData("TSE", 1);
-            } else if (pipeline.region2Avg() <= TSERegionThreshold) {
-                TSEPos = 2;
-                telemetry.addData("TSE", 2);
-            } else {
-                TSEPos = 3;
-                telemetry.addData("TSE", 3);
-            }
-            telemetry.addData("region2", pipeline.region1Avg());
-            telemetry.addData("region3", pipeline.region2Avg());
-            telemetry.addData("TSE Threshold", TSERegionThreshold);
             telemetry.update();
         }
 
 
 
         waitForStart();
+        if(pipeline.TSELocation != 0){
+            TSEPos = pipeline.TSELocation;
+        }else{
+            TSEPos = 3;
+        }
         robot.LF_M.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.LF_M.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         robot.LB_M.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -260,21 +311,21 @@ public class RedCarouselAuto extends LinearOpMode {
 
                 if(TSEPos == 1) {
                     if (CombinedTurret.vPivotModifiedEncoder >= 950 && CombinedTurret.vPivotModifiedEncoder <= 1050){
-                        extendSetpoint = 1250;
+                        extendSetpoint = 800;
                     }
                 }
 
                 else if(TSEPos == 2) {
                 if (CombinedTurret.vPivotModifiedEncoder >= 1150 && CombinedTurret.vPivotModifiedEncoder <= 1250) {
-                    extendSetpoint = 1250;
+                    extendSetpoint = 800;
                 }
                 }
                 else if (TSEPos == 3){
                 if (CombinedTurret.vPivotModifiedEncoder >= 1400 && CombinedTurret.vPivotModifiedEncoder <= 1500){
-                    extendSetpoint = 1250;
+                    extendSetpoint = 800;
                 }
                 }
-                if(CombinedTurret.extendModifiedEncoder >= 1150){
+                if(CombinedTurret.extendModifiedEncoder >= 760){
                     leftIntakeSet = -.5;
                     rightIntakeSet = .5;
                     if(loopcount == 0){
@@ -286,7 +337,7 @@ public class RedCarouselAuto extends LinearOpMode {
                     }
                 }
                 if(robot.I_DS.getDistance(DistanceUnit.INCH) >= 1 || nextMove == 1){
-                    action = 5;
+                    action = 6;
                     StopMotors();
                     startPointX = OdoClass.odoXReturn();
                     startPointY = OdoClass.odoYReturn();
@@ -298,7 +349,7 @@ public class RedCarouselAuto extends LinearOpMode {
 
                 }
             }
-            else if(action == 5){
+            else if(action == 6){//Shipping Unit
 
             targetSpeed = 15;
             xSetpoint = -18.5;
@@ -308,10 +359,11 @@ public class RedCarouselAuto extends LinearOpMode {
                 loopcount = 1;
             }
             ySetpoint = -32;
-            if(DirectionClass.distanceFromReturn() <= 1){
-                VPivotSetpoint = 700;
-                extendSetpoint = 0;
-                rotateSetpoint = 420;
+
+            VPivotSetpoint = 900;
+            if(CombinedTurret.vPivotModifiedEncoder > 800){
+                rotateSetpoint = 150;
+                extendSetpoint = 100;
             }
 
 
@@ -326,7 +378,58 @@ public class RedCarouselAuto extends LinearOpMode {
             }else{
                 breakout = 1;
             }
-        }
+        }else if(action == 6.5){
+                if(getRuntime() - startTime > 20){
+                    xSetpoint = 40;
+                    ySetpoint = -.5;
+                }
+
+                VPivotSetpoint = 900;
+                if(CombinedTurret.vPivotModifiedEncoder > 800){
+                    rotateSetpoint = 150;
+                    extendSetpoint = 100;
+                }
+
+                if(breakout == 1 && DirectionClass.distanceFromReturn() < 1){
+                    action = 6.75;
+                    StopMotors();
+                    startPointX = OdoClass.odoXReturn();
+                    startPointY = OdoClass.odoYReturn();
+                    breakout = 0;
+                    loopcount = 0;
+                    nextMove = 0;
+                }
+                if(xSetpoint > 20){
+                    breakout = 1;
+                }
+
+
+            }else if (action == 6.75){
+                if(OneLoop == false){
+                    OneLoop = true;
+                    breakout = 1;
+                }
+
+                if(getRuntime() - startTime > 20){
+                    xSetpoint = 81;
+                    ySetpoint = -.5;
+                }
+
+
+                VPivotSetpoint = 900;
+                if(CombinedTurret.vPivotModifiedEncoder > 800){
+                    rotateSetpoint = 150;
+                    extendSetpoint = 100;
+                }
+
+                if(breakout == 1 && DirectionClass.distanceFromReturn() < 1){
+                    action = 8;
+                }
+                    if(xSetpoint > 60){
+                        breakout = 1;
+                    }
+
+            }
 
 
 
@@ -445,88 +548,245 @@ public class RedCarouselAuto extends LinearOpMode {
         robot.RF_M.setPower(0);
         robot.RB_M.setPower(0);
     }
-   public static class OpenCVPipeline extends OpenCvPipeline {
+    //OpenCV pipline for TSE Detection
+    public static class OpenCV_Pipeline extends OpenCvPipeline {
 
-        //sets colors for the boxes that we will look in
-       static final Scalar CRIMSON = new Scalar(220, 20, 60);
-       static final Scalar AQUA = new Scalar(79, 195, 247);
-      // static final Scalar PARAKEET = new Scalar(3, 192, 74);
+        /** Most important section of the code: Colors **/
+        static final Scalar GOLD = new Scalar(255, 215, 0);
+        static final Scalar CRIMSON = new Scalar(220, 20, 60);
+        static final Scalar AQUA = new Scalar(79, 195, 247);
+        static final Scalar PARAKEET = new Scalar(3, 192, 74);
+        static final Scalar CYAN = new Scalar(0, 139, 139);
+        static final Scalar WHITE = new Scalar(255, 255, 255);
 
-       //sets the boxes where we will look
-       static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(285, 218);
-       static int REGION1_WIDTH = 30;
-       static int REGION1_HEIGHT = 80;
-       static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(425, 218);
-       static final int REGION2_WIDTH = 30;
-       static final int REGION2_HEIGHT = 80;
-        //static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(430, 260);
-        //static final int REGION3_WIDTH = 60;
-        //static final int REGION3_HEIGHT = 85;
-        //static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(155, 260);
-       //static int REGION1_WIDTH = 60;
-       //static int REGION1_HEIGHT = 85;
+        int indexLowest; double yLowest = -10;
 
-        //uses the boxes setpoints and makes the actual box
-        Point region1_pointA = new Point(REGION1_TOPLEFT_ANCHOR_POINT.x, REGION1_TOPLEFT_ANCHOR_POINT.y);
-        Point region1_pointB = new Point(REGION1_TOPLEFT_ANCHOR_POINT.x + REGION1_WIDTH, REGION1_TOPLEFT_ANCHOR_POINT.y + REGION1_HEIGHT);
+        double TSELocation = 0;
 
-        Point region2_pointA = new Point(REGION2_TOPLEFT_ANCHOR_POINT.x, REGION2_TOPLEFT_ANCHOR_POINT.y);
-        Point region2_pointB = new Point(REGION2_TOPLEFT_ANCHOR_POINT.x + REGION2_WIDTH, REGION2_TOPLEFT_ANCHOR_POINT.y + REGION2_HEIGHT);
-
-       // Point region3_pointA = new Point(REGION3_TOPLEFT_ANCHOR_POINT.x, REGION3_TOPLEFT_ANCHOR_POINT.y);
-        //Point region3_pointB = new Point(REGION3_TOPLEFT_ANCHOR_POINT.x + REGION3_WIDTH, REGION2_TOPLEFT_ANCHOR_POINT.y + REGION3_HEIGHT);
+        // Create a Mat object that will hold the color data
 
 
-        Mat region1_G, region2_G, region3_G, region4_G;
-        Mat GRAY = new Mat();
-        int avg1, avg2, avg3, avg4;
+        Rect redMask;
 
 
-        //actual image processing
-        void inputToG(Mat input) {
-            Imgproc.cvtColor(input, GRAY, Imgproc.COLOR_RGB2GRAY);
-            Core.extractChannel(GRAY, GRAY, 0);
+
+
+
+
+        List<MatOfPoint> redContours;
+
+        // Make a Constructor
+        public OpenCV_Pipeline() {
+
+            redContours = new ArrayList<MatOfPoint>();
+
         }
 
-        @Override
-        public void init(Mat firstFrame) {
-            inputToG(firstFrame);
-            //sets region to look in for color
-            region1_G = GRAY.submat(new Rect(region1_pointA, region1_pointB));
-            region2_G = GRAY.submat(new Rect(region2_pointA, region2_pointB));
-            //region3_G = A.submat(new Rect(region3_pointA, region3_pointB));
-            //region4_G = L.submat(new Rect(region4_pointA, region4_pointB));
+        public boolean filterContours(MatOfPoint contour) {
+            return Imgproc.contourArea(contour) > 400;
         }
 
         @Override
         public Mat processFrame(Mat input) {
 
-            inputToG(input);
+            Mat YCrCb = new Mat();
+            Mat HSV = new Mat();
+            Mat RGBA = new Mat();
 
-            avg1 = (int) Core.mean(region1_G).val[0];
-            avg2 = (int) Core.mean(region2_G).val[0];
-            //avg3 = (int) Core.mean(region3_G).val[0];
-            //avg4 = (int) Core.mean(region4_G).val[0];
 
-            Imgproc.rectangle(input, region1_pointA, region1_pointB, CRIMSON, 2);
-            Imgproc.rectangle(input, region2_pointA, region2_pointB, AQUA, 2);
-           // Imgproc.rectangle(input, region3_pointA, region3_pointB, PARAKEET, 2);
-            //Imgproc.rectangle(input, region4_pointA, region4_pointB, GOLD, 2);
+
+
+
+            Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
+
+            //Scalar scalarLowerYCrCb = new Scalar(TSEHmin, TSESmin, TSEVmin);//for adjusting
+            //Scalar scalarUpperYCrCb = new Scalar(TSEHmax, TSESmax, TSEVmax);//for adjusting
+            Scalar scalarLowerYCrCb = new Scalar(30.0, 120.0, 75.0);//GREEN
+            Scalar scalarUpperYCrCb = new Scalar(78.0, 255.0, 255.0);//GREEN
+            //Scalar scalarLowerYCrCb = new Scalar(130.0, 0.0, 50.0);//Purple
+            //Scalar scalarUpperYCrCb = new Scalar(180.0, 255.0, 255.0);//Purple
+            // min 0,0,0
+            // Max 180, 255,255
+            Mat maskRed = new Mat();
+            //BLUE DO NOT REMOVE
+            //Scalar scalarLowerYCrCb = new Scalar(80.0, 70.0, 100.0);
+            //Scalar scalarUpperYCrCb = new Scalar(180.0, 255.0, 255.0);
+
+            //inRange(HSV, lowYellow, highYellow, maskYellow);
+            //inRange(HSV, lowWhite, highWhite, maskWhite);
+            inRange(HSV, scalarLowerYCrCb, scalarUpperYCrCb, maskRed);
+
+
+            redContours.clear();
+
+
+            Imgproc.findContours(maskRed, redContours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+            Imgproc.drawContours(input, redContours, -1, AQUA); //input
+
+
+            yLowest = -640;
+            indexLowest = 0;
+            Imgproc.rectangle(input, new Point(260, 200), new Point(390,350), AQUA);
+            Imgproc.rectangle(input, new Point(390, 200), new Point(500, 350), PARAKEET);
+            Imgproc.rectangle(input, new Point(500, 200), new Point(630, 350), GOLD);
+
+            if (redContours.size() > 0) {
+                for (int i = 0; i < redContours.size(); i++) {
+                    if (filterContours(redContours.get(i))) {
+                        redMask = Imgproc.boundingRect(redContours.get(i));
+                        Imgproc.rectangle(input, redMask, AQUA, 10);
+
+                        if (redMask.y + redMask.height > 100 && redMask.y + redMask.height < 400) {
+                            if (redMask.x + (redMask.width /2)> 100 && redMask.x + (redMask.width /2) < 210) {
+                                TSELocation = 1;
+                            } else if (redMask.x + (redMask.width /2) > 210 && redMask.x + (redMask.width /2) < 340) {
+                                TSELocation = 2;
+                            } else if (redMask.x + (redMask.width /2) > 340 && redMask.x + (redMask.width /2) < 480) {
+                                TSELocation = 3;
+                            }
+                        }
+                    }
+                }
+                redMask = Imgproc.boundingRect(redContours.get(indexLowest));
+                Imgproc.rectangle(input, redMask, PARAKEET, -5);
+
+
+            } else {
+                TSELocation = -1;
+
+            }
+
+            maskRed.release();
+
+
+
+            YCrCb.release();
+            RGBA.release();
+            HSV.release();
+
+
+
 
             return input;
         }
+    }
 
-        public int region1Avg() {
-            return avg1;
+    public static class CubeTracking_Pipeline extends OpenCvPipeline {
+
+        /** Most important section of the code: Colors **/
+        static final Scalar GOLD = new Scalar(255, 215, 0);
+        static final Scalar CRIMSON = new Scalar(220, 20, 60);
+        static final Scalar AQUA = new Scalar(79, 195, 247);
+        static final Scalar PARAKEET = new Scalar(3, 192, 74);
+        static final Scalar CYAN = new Scalar(0, 139, 139);
+        static final Scalar WHITE = new Scalar(255, 255, 255);
+
+        int indexLowest; double yLowest = -10;
+        double targetX; double targetY; double targetWidth; double targetArea; double yLeft = -10;
+        double cubeCenter = 320;
+        // Create a Mat object that will hold the color data
+
+
+        Rect CubeMask;
+
+
+        List<MatOfPoint> CubeContours;
+
+        // Make a Constructor
+        public CubeTracking_Pipeline() {
+            CubeContours = new ArrayList<MatOfPoint>();
         }
 
-        public int region2Avg() {
-            return avg2;
+        public boolean filterContours(MatOfPoint contour) {
+            return Imgproc.contourArea(contour) > 400;
         }
 
-        //public int region3Avg() { return avg3; }
+        @Override
+        public Mat processFrame(Mat input) {
+
+            Mat YCrCb = new Mat();
+            Mat HSV = new Mat();
+            Mat RGBA = new Mat();
+
+            Imgproc.cvtColor(input, HSV,Imgproc.COLOR_RGB2HSV);
+
+            Scalar scalarLowerYCrCb = new Scalar(Hmin, Smin, Vmin);
+            Scalar scalarUpperYCrCb = new Scalar(Hmax, Smax, Vmax);
+            //Scalar scalarLowerYCrCb = new Scalar(15.0, 100.0, 120.0);
+            //Scalar scalarUpperYCrCb = new Scalar(45.0, 255.0, 255.0);
+            Mat maskCube = new Mat();
 
 
+            inRange(HSV, scalarLowerYCrCb, scalarUpperYCrCb, maskCube);
 
+
+            CubeContours.clear();
+
+
+            Imgproc.findContours(maskCube, CubeContours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+            Imgproc.drawContours(input, CubeContours, -1, AQUA); //input
+      /*      Imgproc.rectangle(input, new Point(0,0), new Point(50,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(50,0), new Point(100,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(100,0), new Point(150,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(150,0), new Point(200,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(200,0), new Point(250,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(250,0), new Point(300,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(300,0), new Point(350,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(350,0), new Point(400,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(400,0), new Point(450,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(450,0), new Point(500,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(500,0), new Point(550,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(550,0), new Point(600,480), AQUA, 1);
+            Imgproc.rectangle(input, new Point(600,0), new Point(640,480), GOLD, -1);*/
+
+
+            yLowest = -640;
+            indexLowest = 0;
+
+            if(CubeContours.size() > 0){
+                for (int i = 0; i < CubeContours.size(); i++){
+                    if (filterContours(CubeContours.get(i))){
+                        CubeMask = Imgproc.boundingRect(CubeContours.get(i));
+                        Imgproc.rectangle(input, CubeMask, AQUA, 2);
+
+                        if(Math.abs((CubeMask.y + CubeMask.height) - yLowest) < 20){
+                            if(CubeMask.x + CubeMask.width > yLeft){
+                                indexLowest = i;
+                                yLowest = CubeMask.y + CubeMask.height;
+                                yLeft = CubeMask.x + CubeMask.width;
+                            }
+                        }else if(CubeMask.y + CubeMask.height > yLowest){
+                            indexLowest = i;
+                            yLowest = CubeMask.y + CubeMask.height;
+                            yLeft = CubeMask.x + CubeMask.width;
+                        }
+                    }
+                }
+                CubeMask = Imgproc.boundingRect(CubeContours.get(indexLowest));
+                Imgproc.rectangle(input, CubeMask, PARAKEET, -5);
+                targetX = CubeMask.x;
+                targetY = CubeMask.y;
+                targetWidth = CubeMask.width;
+                targetArea = CubeMask.height * CubeMask.width;
+                cubeCenter = targetX + (targetWidth/2);
+
+            }else{
+                targetX = -1;
+                targetY = -1;
+                targetWidth = -1;
+                targetArea = -1;
+                cubeCenter = 320;
+
+            }
+
+
+            YCrCb.release();
+            RGBA.release();
+            HSV.release();
+            maskCube.release();
+
+
+            return input;
+        }
     }
 }
