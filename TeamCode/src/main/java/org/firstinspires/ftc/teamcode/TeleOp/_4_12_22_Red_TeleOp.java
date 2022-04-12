@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.TurretClasses.TurretCombined;
 @Config
 @TeleOp
 
-public class _3_31_22_Red_TeleOp extends LinearOpMode{
+public class _4_12_22_Red_TeleOp extends LinearOpMode{
 
     public static double yint = 720;
     public static double slope = 2;
@@ -138,6 +138,8 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                         teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -20);
                     }
 
+                }else if(gamepad2.right_bumper){
+
                 } else if(gamepad2.dpad_right || gamepad1.dpad_right) {//Alliance hub dropping preset
                     teleOpVPivotSet = 1550;
                     if (CombinedTurret.vPivotModifiedEncoder > 1000) {
@@ -191,7 +193,7 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                     teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -30);
 
                 }
-            if(gamepad2.right_bumper) {//carousel stuff
+            if(gamepad1.right_trigger > .05) {//carousel stuff
                 teleOpVPivotSet = 2550;
                 if(CombinedTurret.vPivotModifiedEncoder > 800){
                     teleOpExtendSet = 0;

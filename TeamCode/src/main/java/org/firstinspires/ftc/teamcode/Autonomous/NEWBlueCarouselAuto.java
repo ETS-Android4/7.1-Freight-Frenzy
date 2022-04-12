@@ -704,13 +704,13 @@ public class NEWBlueCarouselAuto extends LinearOpMode {
                         redMask = Imgproc.boundingRect(redContours.get(i));
                         Imgproc.rectangle(input, redMask, AQUA, 10);
 
-                        if (redMask.y + redMask.height > 100 && redMask.y + redMask.height < 400) {
-                            if (redMask.x + (redMask.width /2)> 100 && redMask.x + (redMask.width /2) < 210) {
-                                TSELocation = 1;
+                        if (redMask.y + redMask.height > 150 && redMask.y + redMask.height < 400) {
+                            if (redMask.x + (redMask.width /2) > 340 && redMask.x + (redMask.width /2) < 480) {
+                                TSELocation = 3;
                             } else if (redMask.x + (redMask.width /2) > 210 && redMask.x + (redMask.width /2) < 340) {
                                 TSELocation = 2;
-                            } else if (redMask.x + (redMask.width /2) > 340 && redMask.x + (redMask.width /2) < 480) {
-                                TSELocation = 3;
+                            } else if (redMask.x + (redMask.width /2)> 100 && redMask.x + (redMask.width /2) < 21) {
+                                TSELocation = 1;
                             }
                         }
                     }

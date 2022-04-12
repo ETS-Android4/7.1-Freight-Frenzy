@@ -198,6 +198,7 @@ boolean TSECamOpened = false, TurretCamOpened = false;
             robot.TR_M.setPower(CombinedTurret.rotateFinalMotorPower);
             robot.TE_M.setPower(CombinedTurret.extendFinalMotorPower);
             robot.TP_M.setPower(CombinedTurret.vPivotFinalMotorPower);
+            telemetry.addData("TSEPOS", pipeline.TSELocation);
             telemetry.update();
         }
 
@@ -233,18 +234,19 @@ boolean TSECamOpened = false, TurretCamOpened = false;
 
                 accelerationDistance = 0;
                 decelerationDistance = 4;
+                robot.TC_M.setPower(.3);
                 slowMoveSpeed = 1;
                 slowMovedDistance = 2;
                 thetaDeccelerationDegree = .5;
                 thetaTargetSpeed = 3;
                 xSetpoint = -14;
-                ySetpoint = -6;
+                ySetpoint = -6.5;
                 thetaSetpoint = 0;
                 targetSpeed = 12.5;
                 if(CombinedTurret.vPivotModifiedEncoder >= 2200){
                     rotateSetpoint = 460;
                 }
-                if(DirectionClass.distanceFromReturn() <= .5 && breakout == 1){
+                if(DirectionClass.distanceFromReturn() <= 1 && breakout == 1){
                     action = 2;
                     StopMotors();
                     startPointX = OdoClass.odoXReturn();
@@ -256,15 +258,14 @@ boolean TSECamOpened = false, TurretCamOpened = false;
                     breakout = 1;
                 }
             }
-            else if(action ==2){
+            else if(action ==2){//carousel placement
                if(loopcount == 1){
                    timepassed = getRuntime() + 4.5;
                    loopcount = 0;
                }
                if(timepassed >= getRuntime()){
                    robot.TC_M.setPower(.3);
-               }
-               else{
+               }else{
                    nextMove = 1;
                }
                 if(nextMove == 1 && breakout == 1){
@@ -279,8 +280,8 @@ boolean TSECamOpened = false, TurretCamOpened = false;
                     breakout = 1;
                 }
             }
-            else if(action == 3){ //Move to carousel position
-                rotateSetpoint = -550;
+            else if(action == 3){ //Move to Alliance Hub Placement
+                rotateSetpoint = -625;
                 if(TSEPos == 1){
                     VPivotSetpoint = 1000;
                 }
@@ -291,8 +292,8 @@ boolean TSECamOpened = false, TurretCamOpened = false;
                     VPivotSetpoint = 1450;
                 }
                 targetSpeed = 20;
-               xSetpoint = 0;
-               ySetpoint = -15;
+               xSetpoint = 1.5;
+               ySetpoint = -16;
 
                 if(DirectionClass.distanceFromReturn() <= .5 && breakout == 1){
                     action = 4;
@@ -353,22 +354,18 @@ boolean TSECamOpened = false, TurretCamOpened = false;
 
             targetSpeed = 15;
             xSetpoint = -18.5;
-            rotateSetpoint = 400;
-            if(loopcount == 0){
-                timepassed = getRuntime() + 4;
-                loopcount = 1;
-            }
+
             ySetpoint = -32;
 
             VPivotSetpoint = 900;
             if(CombinedTurret.vPivotModifiedEncoder > 800){
-                rotateSetpoint = 150;
-                extendSetpoint = 100;
+                rotateSetpoint = 450;
+                extendSetpoint = 0;
             }
 
 
-            if((DirectionClass.distanceFromReturn() <= .5 && breakout == 1) && timepassed <= getRuntime()){
-                action = 6;
+            if((DirectionClass.distanceFromReturn() <= .5 && breakout == 1)){
+                action = 6.5;
                 StopMotors();
                 startPointX = OdoClass.odoXReturn();
                 startPointY = OdoClass.odoYReturn();
@@ -381,12 +378,13 @@ boolean TSECamOpened = false, TurretCamOpened = false;
         }else if(action == 6.5){
                 if(getRuntime() - startTime > 20){
                     xSetpoint = 40;
-                    ySetpoint = -.5;
+                    ySetpoint = -2.5;
+                    targetSpeed = 25;
                 }
 
                 VPivotSetpoint = 900;
                 if(CombinedTurret.vPivotModifiedEncoder > 800){
-                    rotateSetpoint = 150;
+                    rotateSetpoint = 50;
                     extendSetpoint = 100;
                 }
 
@@ -407,18 +405,21 @@ boolean TSECamOpened = false, TurretCamOpened = false;
             }else if (action == 6.75){
                 if(OneLoop == false){
                     OneLoop = true;
-                    breakout = 1;
+                    breakout = 0;
                 }
 
                 if(getRuntime() - startTime > 20){
                     xSetpoint = 81;
-                    ySetpoint = -.5;
+                    ySetpoint = -3;
+                }
+                if(DirectionClass.y> 3 && DirectionClass .y > 0){
+                    ySetpoint = OdoClass.odoYReturn() -.5;
                 }
 
 
                 VPivotSetpoint = 900;
                 if(CombinedTurret.vPivotModifiedEncoder > 800){
-                    rotateSetpoint = 150;
+                    rotateSetpoint = 50;
                     extendSetpoint = 100;
                 }
 
@@ -499,6 +500,7 @@ boolean TSECamOpened = false, TurretCamOpened = false;
         telemetry.addData("RF_Power", robot.RF_M.getPower());
         telemetry.addData("LF_Direction", DirectionClass.LF_M_DirectionReturn());
         telemetry.addData("Motor Power Ratio", DirectionClass.motorPowerRatioReturn());
+        telemetry.addData("direction Y", DirectionClass.y);
 
        // telemetry.addData("PT", robot.TP_P.getVoltage());
 
@@ -636,13 +638,20 @@ boolean TSECamOpened = false, TurretCamOpened = false;
                         redMask = Imgproc.boundingRect(redContours.get(i));
                         Imgproc.rectangle(input, redMask, AQUA, 10);
 
-                        if (redMask.y + redMask.height > 100 && redMask.y + redMask.height < 400) {
-                            if (redMask.x + (redMask.width /2)> 100 && redMask.x + (redMask.width /2) < 210) {
+                        if (redMask.y + redMask.height > 150 && redMask.y + redMask.height < 400) {
+                            if (redMask.x + (redMask.width /2)> 260 && redMask.x + (redMask.width /2) < 390) {
                                 TSELocation = 1;
-                            } else if (redMask.x + (redMask.width /2) > 210 && redMask.x + (redMask.width /2) < 340) {
+                            } else if (redMask.x + (redMask.width /2) > 390 && redMask.x + (redMask.width /2) < 500) {
                                 TSELocation = 2;
-                            } else if (redMask.x + (redMask.width /2) > 340 && redMask.x + (redMask.width /2) < 480) {
+                            } else if (redMask.x + (redMask.width /2) > 500 && redMask.x + (redMask.width /2) < 630) {
                                 TSELocation = 3;
+                            }
+                            if (redMask.x + (redMask.width /2) > 500 && redMask.x + (redMask.width /2) < 630) {
+                                TSELocation = 3;
+                            } else if (redMask.x + (redMask.width /2) > 390 && redMask.x + (redMask.width /2) < 500) {
+                                TSELocation = 2;
+                            } else if (redMask.x + (redMask.width /2)> 260 && redMask.x + (redMask.width /2) < 390) {
+                                TSELocation = 1;
                             }
                         }
                     }

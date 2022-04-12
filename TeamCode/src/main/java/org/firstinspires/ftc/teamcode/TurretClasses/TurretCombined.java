@@ -269,7 +269,7 @@ public class TurretCombined {
     }
 
     double VPIVOTMIN;
-    double Y_INT = 1000;
+    double Y_INT = 1010;
     public double VPivotLimits(double extendSet, double vpivotSet, double rotateset, boolean yintreset, boolean limitsBypass){
         if(yintreset){
             Y_INT = (2.2 * vpivotSet) - extendSet;

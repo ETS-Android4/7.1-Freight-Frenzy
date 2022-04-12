@@ -24,7 +24,7 @@ public class DirectionCalcClass {
     double motorPowerRatio;
     double xLastError;
     double x;
-    double y;
+    public double y;
     double xsetpoint;
     double lastxsetpoint;
     double lastysetpoint;

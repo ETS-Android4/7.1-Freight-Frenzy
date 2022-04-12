@@ -15,25 +15,23 @@ import org.firstinspires.ftc.teamcode.TurretClasses.TurretCombined;
 @Config
 @TeleOp
 
-public class _3_31_22_Red_TeleOp extends LinearOpMode{
+public class _4_12_22_Blue_TeleOp extends LinearOpMode{
 
     public static double yint = 720;
     public static double slope = 2;
-    public static double rotateP = .00012;
-    public static double rotateD = .0001;
 
 
     public double x, y, z;
 
     double teleOpExtendSet = 200, teleOpRotateSet = 0, teleOpVPivotSet = 1000;
-    double intakeVPivotSet = 530, intakeRotateSet = -50, intakeExtendSet = 160;
-    double teleOpExtendSpeedSet = 38, teleOpRotateSpeedSet = 2500, teleOpVPivotSpeedSet = 18;
+    double intakeVPivotSet = 530, intakeRotateSet = 0, intakeExtendSet = 160;
+    double teleOpExtendSpeedSet = 38, teleOpRotateSpeedSet = 2000, teleOpVPivotSpeedSet = 18;
     double lastDS = 5, timeStart = 0, CarouselMotor = 0, carouselP = .00012, lastTime = 0, lastCarouselE = 0;
     boolean oneLoop = false;
     boolean controllerY = false;
     double rotateChange = 0, rotateChangeLeft = 0;
     double startCEncoder = 0;
-    public static double CarouselTopSpeed = 1, CaroselSlowSpeed = .38, CaroselSlowDist = 500, CaroselRampUpDist = 1000;
+    public static double CarouselTopSpeed = -1, CaroselSlowSpeed = -.38, CaroselSlowDist = -500, CaroselRampUpDist = -1000;
 
 
 
@@ -55,9 +53,6 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
         waitForStart();
 
         while (opModeIsActive()){
-
-            CombinedTurret.rotatePM = rotateP;
-            CombinedTurret.rotateDM = rotateD;
             //Drivetrain setpoints with smoothing and expontential code
 
             x = Smoothing.SmoothDriveX(-Math.copySign(gamepad1.left_stick_x, gamepad1.left_stick_x * gamepad1.left_stick_x * gamepad1.left_stick_x));
@@ -90,9 +85,7 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                 robot.RI_S.setPower(0);
                 robot.LI_S.setPower(0);
             }
-             teleOpExtendSpeedSet = 38;
-            teleOpRotateSpeedSet = 2500;
-            teleOpVPivotSpeedSet = 18;
+
                                 //turret Presets
                 if(gamepad2.y || gamepad1.y){//Resetting our intake position in case of any encoder drift
                     intakeVPivotSet = CombinedTurret.vPivotModifiedEncoder;
@@ -138,12 +131,14 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                         teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -20);
                     }
 
-                } else if(gamepad2.dpad_right || gamepad1.dpad_right) {//Alliance hub dropping preset
-                    teleOpVPivotSet = 1550;
+                }else if(gamepad2.right_bumper){
+
+                }else if(gamepad2.dpad_right || gamepad1.dpad_right) {//Alliance hub dropping preset
+                    teleOpVPivotSet = 1600;
                     if (CombinedTurret.vPivotModifiedEncoder > 1000) {
-                        teleOpRotateSet = intakeRotateSet - 1450;
-                        if(CombinedTurret.rotateModifiedEncoder < -1000) {
-                            teleOpExtendSet = 820;
+                        teleOpRotateSet = intakeRotateSet + 1440;
+                        if(CombinedTurret.rotateModifiedEncoder > 800) {
+                            teleOpExtendSet = 950;
                         }
                     }
                 }else if(gamepad2.dpad_down || gamepad1.dpad_down) {//Intake position
@@ -164,15 +159,15 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                 }else if(gamepad2.dpad_left || gamepad1.dpad_left){//Shared shipping hub intake position
                     teleOpVPivotSet = 700;
                     if (CombinedTurret.vPivotModifiedEncoder > 600) {
-                        teleOpRotateSet = intakeRotateSet + 1600;
+                        teleOpRotateSet = intakeRotateSet -1700;
                         teleOpExtendSet = -40;
                     }
 
                 }else if(gamepad2.dpad_up || gamepad1.dpad_up){//Mid alliance hub scoring position
                     teleOpVPivotSet = 1260;
                     if (CombinedTurret.vPivotModifiedEncoder > 1000) {
-                        teleOpRotateSet = intakeRotateSet - 1530;
-                        if(CombinedTurret.rotateModifiedEncoder < -800) {
+                        teleOpRotateSet = intakeRotateSet + 1400;
+                        if(CombinedTurret.rotateModifiedEncoder > 800) {
                             teleOpExtendSet = 800;
                         }
                     }
@@ -191,11 +186,11 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                     teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -30);
 
                 }
-            if(gamepad2.right_bumper) {//carousel stuff
+            if(gamepad1.right_trigger > .05) {//carousel stuff
                 teleOpVPivotSet = 2550;
                 if(CombinedTurret.vPivotModifiedEncoder > 800){
                     teleOpExtendSet = 0;
-                    teleOpRotateSet = 0;
+                    teleOpRotateSet = 570;
                 }
 
                 if (oneLoop == false) {
@@ -203,13 +198,13 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                     oneLoop = true;
                     startCEncoder = robot.TC_M.getCurrentPosition();
                 }
-                if(robot.TC_M.getCurrentPosition() - startCEncoder < CaroselSlowDist){
+                if(robot.TC_M.getCurrentPosition() - startCEncoder > CaroselSlowDist){
                     CarouselMotor = CaroselSlowSpeed;
                 }else{
                     CarouselMotor = CaroselSlowSpeed + (CarouselTopSpeed * (((robot.TC_M.getCurrentPosition() - startCEncoder) - CaroselSlowDist)/CaroselRampUpDist));
 
                 }
-                if(CarouselMotor > CarouselTopSpeed){
+                if(CarouselMotor < CarouselTopSpeed){
                     CarouselMotor = CarouselTopSpeed;
                 }
 
@@ -220,7 +215,6 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
                 oneLoop = false;
             }
 
-
             if(gamepad1.y){
                 controllerY = true;
             }else if(gamepad2.y){
@@ -228,6 +222,7 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
             }else{
                 controllerY = false;
             }
+
 
 
 
@@ -279,10 +274,6 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
       //  dashboardTelemetry.addData("extend Motor Power", CombinedTurret.extendFinalMotorPower);
       //  dashboardTelemetry.addData("extend speed", CombinedTurret.extendSpeed);
         dashboardTelemetry.addData("extend Modified Encoder", CombinedTurret.extendModifiedEncoder);
-        dashboardTelemetry.addData("rotate Motor Power", robot.TR_M.getPower());
-        dashboardTelemetry.addData("rotate Set", teleOpRotateSet);
-        dashboardTelemetry.addData("rotate Speed", CombinedTurret.rotateSpeed);
-        dashboardTelemetry.addData("carouselSpeed", CarouselMotor);
       //  dashboardTelemetry.addData("extend Set", CombinedTurret.extendSet);
       //  dashboardTelemetry.addData("turret Homing trigger", CombinedTurret.turretHomingTrigger);
 
@@ -293,8 +284,6 @@ public class _3_31_22_Red_TeleOp extends LinearOpMode{
         telemetry.addData("rotate mod encoder", CombinedTurret.rotateModifiedEncoder);
         telemetry.addData("Extend Set", teleOpExtendSet);
         telemetry.addData("VPivot Set", teleOpVPivotSet);
-        telemetry.addData("rotateLeftChange", rotateChangeLeft);
-        telemetry.addData("rotateChange right", rotateChange);
         //telemetry.addData("rotate RAW Encoder", robot.TR_M.getCurrentPosition());
         //telemetry.addData("carousel timer", getRuntime() - timeStart);
         //dashboardTelemetry.addData("carousel Speed", ((robot.TC_M.getCurrentPosition() - lastCarouselE)/(getRuntime() - lastTime)));

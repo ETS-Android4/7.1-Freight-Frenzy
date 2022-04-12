@@ -621,7 +621,7 @@ OpenCvCamera TurretCam2;
                     STOPMOTORS = false;
                 }
 
-                VPivotSetpoint = 1485;
+                VPivotSetpoint = 1585;
 
                 if ((CombinedTurret.vPivotModifiedEncoder >= 875)) {
                     rotateSetpoint = 1440;
@@ -765,9 +765,9 @@ OpenCvCamera TurretCam2;
                 if(action < 10){
                     preStuckAction = action;
                 }
-                if(DirectionClass.LF_M_DirectionReturn() > 0){
+                if(DirectionClass.LF_M_DirectionReturn() > 0 && OdoClass.odoXReturn() < 26){
                     action = 103;
-                }else{
+                }else if(OdoClass.odoXReturn() < 26){
                     action = 105;
                 }
             }
@@ -951,13 +951,13 @@ OpenCvCamera TurretCam2;
                             redMask = Imgproc.boundingRect(redContours.get(i));
                             Imgproc.rectangle(input, redMask, AQUA, 10);
 
-                            if (redMask.y + redMask.height > 100 && redMask.y + redMask.height < 400) {
-                                if (redMask.x + (redMask.width /2)> 100 && redMask.x + (redMask.width /2) < 210) {
-                                    TSELocation = 1;
+                            if (redMask.y + redMask.height > 150 && redMask.y + redMask.height < 400) {
+                                if (redMask.x + (redMask.width /2) > 340 && redMask.x + (redMask.width /2) < 480) {
+                                    TSELocation = 3;
                                 } else if (redMask.x + (redMask.width /2) > 210 && redMask.x + (redMask.width /2) < 340) {
                                     TSELocation = 2;
-                                } else if (redMask.x + (redMask.width /2) > 340 && redMask.x + (redMask.width /2) < 480) {
-                                    TSELocation = 3;
+                                } else if (redMask.x + (redMask.width /2)> 100 && redMask.x + (redMask.width /2) < 21) {
+                                    TSELocation = 1;
                                 }
                             }
                         }

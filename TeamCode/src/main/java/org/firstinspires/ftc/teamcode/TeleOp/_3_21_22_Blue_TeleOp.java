@@ -24,7 +24,7 @@ public class _3_21_22_Blue_TeleOp extends LinearOpMode{
     public double x, y, z;
 
     double teleOpExtendSet = 200, teleOpRotateSet = 0, teleOpVPivotSet = 1000;
-    double intakeVPivotSet = 480, intakeRotateSet = 0, intakeExtendSet = 275;
+    double intakeVPivotSet = 530, intakeRotateSet = 0, intakeExtendSet = 160;
     double teleOpExtendSpeedSet = 38, teleOpRotateSpeedSet = 2000, teleOpVPivotSpeedSet = 18;
     double lastDS = 5, timeStart = 0, CarouselMotor = 0, carouselP = .00012, lastTime = 0, lastCarouselE = 0;
     boolean oneLoop = false;
