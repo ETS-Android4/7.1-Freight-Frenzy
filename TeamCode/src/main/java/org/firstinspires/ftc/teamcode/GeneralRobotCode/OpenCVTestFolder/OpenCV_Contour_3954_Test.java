@@ -13,8 +13,8 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
-@Config //Disable if not using FTC Dashboard https://github.com/PinkToTheFuture/OpenCV_FreightFrenzy_2021-2022#opencv_freightfrenzy_2021-2022
-@Autonomous(name="OpenCV_Contour_3954_Test", group="Tutorials")
+//@Config //Disable if not using FTC Dashboard https://github.com/PinkToTheFuture/OpenCV_FreightFrenzy_2021-2022#opencv_freightfrenzy_2021-2022
+//@Autonomous(name="OpenCV_Contour_3954_Test", group="Tutorials")
 
 public class OpenCV_Contour_3954_Test extends LinearOpMode {
     private OpenCvCamera webcam;

@@ -23,7 +23,7 @@ public class DirectionCalcClass {
     double xDerivitive;
     double motorPowerRatio;
     double xLastError;
-    double x;
+    public double x;
     public double y;
     double xsetpoint;
     double lastxsetpoint;

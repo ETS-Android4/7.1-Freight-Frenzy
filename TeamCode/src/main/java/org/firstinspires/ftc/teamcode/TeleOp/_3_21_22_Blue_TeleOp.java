@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.GeneralRobotCode.Smoothing;
 import org.firstinspires.ftc.teamcode.TurretClasses.TurretCombined;
 
 
-@Config
-@TeleOp
+//@Config
+//@TeleOp
 
 public class _3_21_22_Blue_TeleOp extends LinearOpMode{
 

@@ -54,7 +54,7 @@ public class TurretCombined {
                 vPivotSpeedSet = 5;
             }
             if(VPivotMag == false && lastVPivotMag == true){
-                vPivotModifiedEncoder = 1600;
+                vPivotModifiedEncoder = 1550;
                 vPivotSet = 1500;
                 vPivotIsHomed = true;
             }
@@ -97,8 +97,8 @@ public class TurretCombined {
         }else {
 
             //setpoint limits
-            if (ExtendSet > 870) {
-                extendSet = 870;
+            if (ExtendSet > 950) {
+                extendSet = 950;
             }else if(ExtendSet < -60){
                 extendSet = -60;
             }
@@ -269,7 +269,7 @@ public class TurretCombined {
     }
 
     double VPIVOTMIN;
-    double Y_INT = 1010;
+    double Y_INT = 950;
     public double VPivotLimits(double extendSet, double vpivotSet, double rotateset, boolean yintreset, boolean limitsBypass){
         if(yintreset){
             Y_INT = (2.2 * vpivotSet) - extendSet;

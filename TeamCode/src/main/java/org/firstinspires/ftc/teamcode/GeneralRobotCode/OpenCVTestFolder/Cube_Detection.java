@@ -22,7 +22,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous
+//@Autonomous
 public class Cube_Detection extends LinearOpMode {
 
     // Define Webcam

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Autonomous;
+package org.firstinspires.ftc.teamcode.Autonomous.OldCode;
 
 import static org.opencv.core.Core.inRange;
 
@@ -40,8 +40,8 @@ import org.openftc.easyopencv.OpenCvSwitchableWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
-@Config
-@Autonomous
+//@Config
+//@Autonomous
 public class BlueCyclingNew extends LinearOpMode {
 
     //imports other classes to be used in this program
@@ -944,20 +944,22 @@ OpenCvCamera TurretCam2;
                 Imgproc.rectangle(input, new Point(100, 225), new Point(210,375), AQUA);
                 Imgproc.rectangle(input, new Point(210, 225), new Point(340, 375), PARAKEET);
                 Imgproc.rectangle(input, new Point(340, 225), new Point(480, 375), GOLD);
-
+                TSELocation = 0;
                 if (redContours.size() > 0) {
                     for (int i = 0; i < redContours.size(); i++) {
                         if (filterContours(redContours.get(i))) {
                             redMask = Imgproc.boundingRect(redContours.get(i));
                             Imgproc.rectangle(input, redMask, AQUA, 10);
+                            if(TSELocation == 0 || TSELocation == 1) {
 
-                            if (redMask.y + redMask.height > 150 && redMask.y + redMask.height < 400) {
-                                if (redMask.x + (redMask.width /2) > 340 && redMask.x + (redMask.width /2) < 480) {
-                                    TSELocation = 3;
-                                } else if (redMask.x + (redMask.width /2) > 210 && redMask.x + (redMask.width /2) < 340) {
-                                    TSELocation = 2;
-                                } else if (redMask.x + (redMask.width /2)> 100 && redMask.x + (redMask.width /2) < 21) {
-                                    TSELocation = 1;
+                                if (redMask.y + redMask.height > 200 && redMask.y + redMask.height < 400) {
+                                    if (redMask.x + (redMask.width / 2) > 340 && redMask.x + (redMask.width / 2) < 480) {
+                                        TSELocation = 3;
+                                    } else if (redMask.x + (redMask.width / 2) > 210 && redMask.x + (redMask.width / 2) < 340) {
+                                        TSELocation = 2;
+                                    } else if (redMask.x + (redMask.width / 2) > 100 && redMask.x + (redMask.width / 2) < 21) {
+                                        TSELocation = 1;
+                                    }
                                 }
                             }
                         }

@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.GeneralRobotCode.Smoothing;
 import org.firstinspires.ftc.teamcode.TurretClasses.TurretCombined;
 
 
-@TeleOp
+//@TeleOp
 
 public class RyanTeleOpStuff extends LinearOpMode{
 

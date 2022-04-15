@@ -18,7 +18,6 @@ import org.firstinspires.ftc.teamcode.Autonomous.AutoClasses.SpeedClass;
 import org.firstinspires.ftc.teamcode.Autonomous.AutoClasses.TurnControl;
 import org.firstinspires.ftc.teamcode.GeneralRobotCode.FreightFrenzyHardwareMap;
 import org.firstinspires.ftc.teamcode.TurretClasses.TurretCombined;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
@@ -32,9 +31,10 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Config
 @Autonomous
-public class NEWBlueCarouselAuto extends LinearOpMode {
+public class BlueCarouselWithDUCK extends LinearOpMode {
     FreightFrenzyHardwareMap robot = new FreightFrenzyHardwareMap();
     SpeedClass SpeedClass = new SpeedClass();
     DirectionCalcClass DirectionClass = new DirectionCalcClass();
@@ -130,7 +130,7 @@ public class NEWBlueCarouselAuto extends LinearOpMode {
         pipeline = new OpenCV_Pipeline();
         CubePipline = new CubeTracking_Pipeline();
 
-        RightCam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+        /*RightCam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             //starts the webcam and defines the pixels
             public void onOpened() {
@@ -157,8 +157,8 @@ public class NEWBlueCarouselAuto extends LinearOpMode {
                 /*
                  * This will be called if the camera could not be opened
 `               */
-            }
-        });
+       //     }
+       // });
 
        TurretCam2.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
@@ -301,7 +301,10 @@ public class NEWBlueCarouselAuto extends LinearOpMode {
                 }
             }
             else if(action == 3){ //Move to Aliiance Hub dropping
-                rotateSetpoint = 450;
+                if(CombinedTurret.vPivotModifiedEncoder > 800){
+                    rotateSetpoint = 450;
+                }
+
                 if(TSEPos == 1){
                     VPivotSetpoint = 1000;
                 }
@@ -309,7 +312,7 @@ public class NEWBlueCarouselAuto extends LinearOpMode {
                     VPivotSetpoint = 1200;
                 }
                 else if (TSEPos == 3){
-                    VPivotSetpoint = 1450;
+                    VPivotSetpoint = 1550;
                 }
                 targetSpeed = 20;
                xSetpoint = 0;
@@ -329,103 +332,140 @@ public class NEWBlueCarouselAuto extends LinearOpMode {
                 }
             }
             else if(action == 4){//extending to drop
+                if(CombinedTurret.vPivotModifiedEncoder > 800){
+                    rotateSetpoint = 450;
+                }
+                if(CombinedTurret.rotateModifiedEncoder > 100) {
 
-                if(TSEPos == 1) {
-                    if (CombinedTurret.vPivotModifiedEncoder >= 950 && CombinedTurret.vPivotModifiedEncoder <= 1050){
-                        extendSetpoint = 800;
+                    if (TSEPos == 1) {
+                        if (CombinedTurret.vPivotModifiedEncoder >= 950 && CombinedTurret.vPivotModifiedEncoder <= 1050) {
+                            extendSetpoint = 800;
+                        }
+                    } else if (TSEPos == 2) {
+                        if (CombinedTurret.vPivotModifiedEncoder >= 1150 && CombinedTurret.vPivotModifiedEncoder <= 1250) {
+                            extendSetpoint = 800;
+                        }
+                    } else if (TSEPos == 3) {
+                        if (CombinedTurret.vPivotModifiedEncoder >= 1500 && CombinedTurret.vPivotModifiedEncoder <= 1600) {
+                            extendSetpoint = 800;
+                        }
                     }
-                }
-
-                else if(TSEPos == 2) {
-                if (CombinedTurret.vPivotModifiedEncoder >= 1150 && CombinedTurret.vPivotModifiedEncoder <= 1250) {
-                    extendSetpoint = 800;
-                }
-                }
-                else if (TSEPos == 3){
-                if (CombinedTurret.vPivotModifiedEncoder >= 1400 && CombinedTurret.vPivotModifiedEncoder <= 1500){
-                    extendSetpoint = 800;
-                }
                 }
                 if(CombinedTurret.extendModifiedEncoder >= 760){
                     leftIntakeSet = -.4;
                     rightIntakeSet = .4;
                     if(loopcount == 0){
-                        timepassed = getRuntime() + 3;
+                        timepassed = getRuntime() + 2.1;
                         loopcount = 1;
                     }
                     if(timepassed <= getRuntime()){
                         nextMove = 1;
                     }
                 }
-                if(robot.I_DS.getDistance(DistanceUnit.INCH) >= 1 || nextMove == 1){
-                /*    if(hasAction5){
-                        action = 6;
-                    }else{
-                        action = 5;
-                    }*/
-                    action = 6;
+                if(hasAction5){
+                    if(nextMove == 1){
+                        if(hasAction5){
+                            action = 6;
+                        }else{
+                            action = 5;
+                        }
+                        //action = 6;
 
-                    StopMotors();
-                    startPointX = OdoClass.odoXReturn();
-                    startPointY = OdoClass.odoYReturn();
-                    breakout = 0;
-                    loopcount = 0;
-                    nextMove = 0;
-                    leftIntakeSet = 0;
-                    rightIntakeSet = 0;
+                        StopMotors();
+                        startPointX = OdoClass.odoXReturn();
+                        startPointY = OdoClass.odoYReturn();
+                        breakout = 0;
+                        loopcount = 0;
+                        nextMove = 0;
+                        leftIntakeSet = 0;
+                        rightIntakeSet = 0;
 
+                    }
+                }else {
+                    if (robot.I_DS.getDistance(DistanceUnit.INCH) >= 1.5 || nextMove == 1) {
+                        if (hasAction5) {
+                            action = 6;
+                        } else {
+                            action = 5;
+                        }
+                        //action = 6;
+
+                        StopMotors();
+                        startPointX = OdoClass.odoXReturn();
+                        startPointY = OdoClass.odoYReturn();
+                        breakout = 0;
+                        loopcount = 0;
+                        nextMove = 0;
+                        leftIntakeSet = 0;
+                        rightIntakeSet = 0;
+
+                    }
                 }
             }else if(action == 5){
                 if(Oneloop == false){
                     Oneloop = true;
                     extendSetpoint = 0;
                     CombinedTurret.trackingRotate = true;
+                    rotateSpeed = 600;
                 }
                 hasAction5 = true;
 
                 rightIntakeSet = -0.5;
                 leftIntakeSet = 0.5;
 
+                if(CombinedTurret.rotateModifiedEncoder > -400) {
 
-
-
-                if(CombinedTurret.vPivotModifiedEncoder > 800){
-                    rotateSetpoint = -1900;
-                }
-                if(CombinedTurret.rotateModifiedEncoder < -800){
-                    VPivotSetpoint = 450;
-                    if(CubePipline.CubeContours.size() < 1){
-                        rotateSetpoint = rotateSetpoint - 20;
-                    }
-
-                    if (Math.abs(CombinedTurret.rotateModifiedEncoder - rotateSetpoint) < 14 && CubePipline.targetX + (CubePipline.targetWidth/2) > 0 && CombinedTurret.rotateModifiedEncoder < -1000) {
-                        cubeLocationRotateEncoder = (.6555 * (CubePipline.targetX + (CubePipline.targetWidth/2))) - 212;
-                    }else{
-                        cubeLocationRotateEncoder = 0;
-                    }
-                    rotateSetpoint = rotateSetpoint + cubeLocationRotateEncoder;
-                }else{
                     VPivotSetpoint = 900;
-                }
+                    if (CombinedTurret.vPivotModifiedEncoder > 800) {
+                        rotateSetpoint = -800;
+                    }
+
+                }else {
 
 
-                if(rotateSetpoint > 0){
-                    rotateSetpoint = 0;
-                }
+                    if (CombinedTurret.rotateModifiedEncoder < -700) {
+                        VPivotSetpoint = 450;
 
 
-                if(Math.abs(320 - (CubePipline.targetX + (CubePipline.targetWidth/2)))  < 20){
-                    extendSetpoint = extendSetpoint + 20;
-                }
-                if(extendSetpoint > 800){
-                    extendSetpoint = 0;
-                    VPivotSetpoint = 500;
-                    rotateSetpoint = -1900;
-                }
-                if(robot.I_DS.getDistance(DistanceUnit.INCH) < 1){
-                    action = 3;
-                    CombinedTurret.trackingRotate = false;
+                        if (Math.abs(rotateSetpoint-CombinedTurret.rotateModifiedEncoder) < 15 || CubePipline.targetX + (CubePipline.targetWidth / 2) > 0 && CombinedTurret.rotateModifiedEncoder < -800) {
+                            cubeLocationRotateEncoder = (.6555 * (CubePipline.targetX + (CubePipline.targetWidth / 2))) - 212;
 
+                        } else {
+                            if(rotateSetpoint > -2300){
+                                cubeLocationRotateEncoder = -7;
+
+                            }else{
+                                rotateSetpoint = -500;
+                            }
+
+                        }
+                        rotateSetpoint = rotateSetpoint + cubeLocationRotateEncoder;
+
+                    } else {
+                        VPivotSetpoint = 900;
+                    }
+
+
+                    if (rotateSetpoint > 0) {
+                        rotateSetpoint = 0;
+                    }
+
+
+                    if (Math.abs(320 - (CubePipline.targetX + (CubePipline.targetWidth / 2))) < 40) {
+                        extendSetpoint = extendSetpoint + 20;
+                    }
+                    if (extendSetpoint > 800) {
+                        extendSetpoint = 0;
+                        VPivotSetpoint = 500;
+                        rotateSetpoint = -1900;
+                    }
+                    if (robot.I_DS.getDistance(DistanceUnit.INCH) < 1) {
+                        action = 3;
+                        rotateSpeed = 2500;
+                        extendSetpoint = 100;
+                        CombinedTurret.trackingRotate = false;
+
+                    }
                 }
 
 
@@ -445,7 +485,8 @@ public class NEWBlueCarouselAuto extends LinearOpMode {
 
 
             if((DirectionClass.distanceFromReturn() <= .5 && breakout == 1) && CombinedTurret.rotateModifiedEncoder > 100){
-                action = 6.5;
+                //action = 6.5;
+                action = 8;
                 StopMotors();
                 startPointX = OdoClass.odoXReturn();
                 startPointY = OdoClass.odoYReturn();

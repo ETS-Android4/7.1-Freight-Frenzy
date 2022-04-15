@@ -26,8 +26,8 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous
-@Config
+//@Autonomous
+//@Config
 public class Cube_Tracking extends LinearOpMode {
 
     public static double followP = .05;

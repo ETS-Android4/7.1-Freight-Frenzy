@@ -632,26 +632,22 @@ boolean TSECamOpened = false, TurretCamOpened = false;
             Imgproc.rectangle(input, new Point(390, 200), new Point(500, 350), PARAKEET);
             Imgproc.rectangle(input, new Point(500, 200), new Point(630, 350), GOLD);
 
+            TSELocation = 0;
             if (redContours.size() > 0) {
                 for (int i = 0; i < redContours.size(); i++) {
                     if (filterContours(redContours.get(i))) {
                         redMask = Imgproc.boundingRect(redContours.get(i));
                         Imgproc.rectangle(input, redMask, AQUA, 10);
+                        if(TSELocation == 0 || TSELocation == 1) {
+                            if (redMask.y + redMask.height > 150 && redMask.y + redMask.height < 400) {
 
-                        if (redMask.y + redMask.height > 150 && redMask.y + redMask.height < 400) {
-                            if (redMask.x + (redMask.width /2)> 260 && redMask.x + (redMask.width /2) < 390) {
-                                TSELocation = 1;
-                            } else if (redMask.x + (redMask.width /2) > 390 && redMask.x + (redMask.width /2) < 500) {
-                                TSELocation = 2;
-                            } else if (redMask.x + (redMask.width /2) > 500 && redMask.x + (redMask.width /2) < 630) {
-                                TSELocation = 3;
-                            }
-                            if (redMask.x + (redMask.width /2) > 500 && redMask.x + (redMask.width /2) < 630) {
-                                TSELocation = 3;
-                            } else if (redMask.x + (redMask.width /2) > 390 && redMask.x + (redMask.width /2) < 500) {
-                                TSELocation = 2;
-                            } else if (redMask.x + (redMask.width /2)> 260 && redMask.x + (redMask.width /2) < 390) {
-                                TSELocation = 1;
+                                if (redMask.x + (redMask.width / 2) > 500 && redMask.x + (redMask.width / 2) < 630) {
+                                    TSELocation = 3;
+                                } else if (redMask.x + (redMask.width / 2) > 390 && redMask.x + (redMask.width / 2) < 500) {
+                                    TSELocation = 2;
+                                } else if (redMask.x + (redMask.width / 2) > 260 && redMask.x + (redMask.width / 2) < 390) {
+                                    TSELocation = 1;
+                                }
                             }
                         }
                     }

@@ -79,8 +79,8 @@ public class _4_12_22_Blue_TeleOp extends LinearOpMode{
                 robot.RI_S.setPower(-.5);
                 robot.LI_S.setPower(.5);
             }else if(gamepad1.b || gamepad2.b || gamepad1.left_bumper){//outtake
-                robot.RI_S.setPower(.3);
-                robot.LI_S.setPower(-.3);
+                robot.RI_S.setPower(.4);
+                robot.LI_S.setPower(-.4);
             }else{//servos off
                 robot.RI_S.setPower(0);
                 robot.LI_S.setPower(0);
@@ -132,8 +132,49 @@ public class _4_12_22_Blue_TeleOp extends LinearOpMode{
                     }
 
                 }else if(gamepad2.right_bumper){
+                    if(gamepad2.dpad_down){
+                        if (Math.abs(intakeRotateSet - CombinedTurret.rotateModifiedEncoder) < 150 && Math.abs(intakeExtendSet - CombinedTurret.extendModifiedEncoder) < 100) {
+                            teleOpVPivotSet = intakeVPivotSet;
+                        }else{
+                            if (CombinedTurret.vPivotModifiedEncoder > 800) {
+                                if(Math.abs(intakeExtendSet - CombinedTurret.extendModifiedEncoder) < 800){
+                                    teleOpRotateSet = intakeRotateSet;
+                                }
+                                teleOpExtendSet = intakeExtendSet;
 
-                }else if(gamepad2.dpad_right || gamepad1.dpad_right) {//Alliance hub dropping preset
+                            }else{
+                                teleOpVPivotSet = 900;
+                            }
+                        }
+                    }else if(gamepad2.dpad_left){
+                        teleOpVPivotSet = 700;
+                        if (CombinedTurret.vPivotModifiedEncoder > 600) {
+                            teleOpRotateSet = intakeRotateSet -1700;
+                            teleOpExtendSet = -40;
+                        }
+                    }else if(gamepad2.dpad_right){
+                        teleOpVPivotSet = 800;
+                        if(CombinedTurret.vPivotModifiedEncoder > 700){
+                            teleOpRotateSet = intakeRotateSet - 630;
+                            teleOpExtendSet = 85;
+                        }
+                    }else{
+                        teleOpVPivotSpeedSet = 10;
+                        teleOpRotateSpeedSet = 1000;
+                        teleOpExtendSpeedSet = 25;
+                        teleOpExtendSet = teleOpExtendSet - Smoothing.SmoothExtend(gamepad2.right_stick_y * 30);
+
+                        rotateChange = Smoothing.SmoothRotate(gamepad2.right_trigger * 25);
+                        //rotateChange = gamepad2.right_trigger * 40;
+                        //rotateChangeLeft = gamepad2.left_trigger * -40;
+
+                        rotateChangeLeft = Smoothing.SmoothRotateLeft(gamepad2.left_trigger * -25);
+
+                        teleOpRotateSet = teleOpRotateSet + rotateChange + rotateChangeLeft;
+
+                        teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -20);
+                    }
+                }else if(gamepad1.dpad_right) {//Alliance hub dropping preset
                     teleOpVPivotSet = 1600;
                     if (CombinedTurret.vPivotModifiedEncoder > 1000) {
                         teleOpRotateSet = intakeRotateSet + 1440;
@@ -156,7 +197,7 @@ public class _4_12_22_Blue_TeleOp extends LinearOpMode{
                         }
                     }
 
-                }else if(gamepad2.dpad_left || gamepad1.dpad_left){//Shared shipping hub intake position
+                }else if(gamepad1.dpad_left){//Shared shipping hub intake position
                     teleOpVPivotSet = 700;
                     if (CombinedTurret.vPivotModifiedEncoder > 600) {
                         teleOpRotateSet = intakeRotateSet -1700;
@@ -238,8 +279,8 @@ public class _4_12_22_Blue_TeleOp extends LinearOpMode{
                     teleOpVPivotSet = 100;
                 }
 
-                if(teleOpExtendSet > 920){
-                    teleOpExtendSet = 920;
+                if(teleOpExtendSet > 950){
+                    teleOpExtendSet = 950;
                 }if(teleOpExtendSet < -40){
                     teleOpExtendSet = -40;
                 }
