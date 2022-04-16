@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 import static org.opencv.core.Core.inRange;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -32,9 +30,8 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 import java.util.List;
 
-@Config
 @Autonomous
-public class BlueCarouselWithDUCK extends LinearOpMode {
+public class REDCarouselWITHDUCK extends LinearOpMode {
     FreightFrenzyHardwareMap robot = new FreightFrenzyHardwareMap();
     SpeedClass SpeedClass = new SpeedClass();
     DirectionCalcClass DirectionClass = new DirectionCalcClass();
@@ -47,6 +44,7 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
     //Declares Varibles
     public static double Hmin = 15, Hmax = 50, Smin = 150, Smax = 255, Vmin = 150, Vmax = 255 ;
     double breakout;
+    boolean hasAction5 = false;
     double lastAction = 0;
     double intakeXSetMod = 1;
     double Detected;
@@ -57,12 +55,12 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
     double justTurn;
     double timepassed;
     double lastEndPointX;
-    double cubeLocationRotateEncoder = 0;
 
     double xSetpoint;
     double ySetpoint;
     double turnIncriments;
     double onlyDriveMotors;
+    boolean OneLoop = false;
     double thetaSetpoint;
     double loopcount;
     double accelerationDistance;
@@ -72,6 +70,7 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
     double thetaTargetSpeed;
     double thetaDeccelerationDegree;
     double targetSpeed;
+    double cubeLocationRotateEncoder;
     double stopProgram;
     double rotateSetpoint;
     double rotateSpeed;
@@ -94,54 +93,44 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
     double TSERegionThreshold = 100;
     double IntakeXSetpoint = 44;
     double YChangingSet = 1;
-    boolean TurretCamOpened = false, TSECamOpened = false;
 
     double action;
     double initPOsitionOrder = 1;
-    boolean hasAction5 = false;
-    boolean Oneloop = false;
-    double startOPTime = 0;
+boolean TSECamOpened = false, TurretCamOpened = false;
 
     static CubeTracking_Pipeline CubePipline;
 
     static OpenCV_Pipeline pipeline;
-    OpenCvCamera RightCam1;
+    OpenCvCamera LeftCam1;
     OpenCvCamera TurretCam2;
-
     @Override
 
     public void runOpMode() {
-
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-
         robot.init(hardwareMap);
-
-        //sets up the camera for openCV piplines
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
 
         int[] viewportContainerIds = OpenCvCameraFactory.getInstance().splitLayoutForMultipleViewports(cameraMonitorViewId, 2,OpenCvCameraFactory.ViewportSplitMethod.VERTICALLY);
         // SwitchableWebcam = OpenCvCameraFactory.getInstance().createSwitchableWebcam(cameraMonitorViewId, RightCam, TurretCam1);
         TurretCam2 = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "TurretCam1"), viewportContainerIds[0]);
-        RightCam1 = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "RightCam"), viewportContainerIds[1]);
+        LeftCam1 = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "LeftCam"), viewportContainerIds[1]);
 
 
         //allows to call pipline
         pipeline = new OpenCV_Pipeline();
         CubePipline = new CubeTracking_Pipeline();
 
-        RightCam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+        LeftCam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             //starts the webcam and defines the pixels
             public void onOpened() {
 
-                RightCam1.setPipeline(pipeline);
+                LeftCam1.setPipeline(pipeline);
                 TSECamOpened = true;
 
 
-                RightCam1.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+                LeftCam1.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
                 //gives FTC dashboard acess to the camera
-                FtcDashboard.getInstance().startCameraStream(RightCam1, 10);
+                //FtcDashboard.getInstance().startCameraStream(LeftCam1, 10);
                 telemetry.addData("TSECameraOpened", "");
                 telemetry.update();
 
@@ -160,7 +149,7 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
             }
         });
 
-       TurretCam2.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+        TurretCam2.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             //starts the webcam and defines the pixels
             public void onOpened() {
@@ -171,7 +160,7 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
 
                 TurretCam2.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
                 //gives FTC dashboard acess to the camera
-                FtcDashboard.getInstance().startCameraStream(TurretCam2, 10);
+                //FtcDashboard.getInstance().startCameraStream(TurretCam2, 10);
                 telemetry.addData("TURRETCameraOpened", "");
                 telemetry.update();
 
@@ -190,39 +179,39 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
 `               */
             }
         });
-
+        telemetry.update();
+        //Depending on the ring stack we change our intake to diffrent heights to be able to reach the top of the stack
+        //Enters our 1 loop system, will exit once all actions are done
         while (!opModeIsActive()) {
 
             VPivotSetpoint = 900;
             VPivotSpeed = 10;
-            if(Math.abs(-50 - CombinedTurret.extendModifiedEncoder) < 50 && Math.abs(465 - CombinedTurret.rotateModifiedEncoder) < 50){
-                VPivotSetpoint = 602;
-
+            if(Math.abs(0 - CombinedTurret.extendModifiedEncoder) < 50 && Math.abs(-600 - CombinedTurret.rotateModifiedEncoder) < 50){
+                VPivotSetpoint = 630;
             }else if(VPivotSetpoint > 850){
-                extendSetpoint = -50;
-
+                extendSetpoint = -30;
                 extendSpeed = 15;
-
-                rotateSetpoint = 465;
+                rotateSetpoint = -620;
                 rotateSpeed = 1000;
-
             }
 
             CombinedTurret.TurretCombinedMethod(extendSetpoint,extendSpeed,rotateSetpoint,rotateSpeed, VPivotSetpoint,VPivotSpeed, robot.TE_M.getCurrentPosition(), robot.TE_G.getState(), robot.TR_M.getCurrentPosition(), robot.TR_G.getState(), robot.TP_M.getCurrentPosition(), robot.TP_G.getState());
             robot.TR_M.setPower(CombinedTurret.rotateFinalMotorPower);
             robot.TE_M.setPower(CombinedTurret.extendFinalMotorPower);
             robot.TP_M.setPower(CombinedTurret.vPivotFinalMotorPower);
-
-            telemetry.addData("TSEcamOpened?", TSECamOpened);
-            telemetry.addData("TurretCamOpened?", TurretCamOpened);
-            telemetry.addData("TSELocation", pipeline.TSELocation);
+            telemetry.addData("TSEPOS", pipeline.TSELocation);
+            telemetry.addData("TSECAM", TSECamOpened);
+            telemetry.addData("TurretCam", TurretCamOpened);
             telemetry.update();
-            dashboardTelemetry.update();
         }
 
 
 
         waitForStart();
+        LeftCam1.stopStreaming();
+        LeftCam1.closeCameraDevice();;
+
+
         if(pipeline.TSELocation != 0){
             TSEPos = pipeline.TSELocation;
         }else{
@@ -248,24 +237,23 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
         extendSpeed = 25;
         VPivotSpeed = 12;
         while (opModeIsActive() && stopProgram == 0) {
-
-
             if(action == 1){ //Move to carousel position
 
                 accelerationDistance = 0;
                 decelerationDistance = 4;
+                robot.TC_M.setPower(.3);
                 slowMoveSpeed = 1;
                 slowMovedDistance = 2;
                 thetaDeccelerationDegree = .5;
                 thetaTargetSpeed = 3;
-                xSetpoint = -13;
-                ySetpoint = 6;
+                xSetpoint = -14.25;
+                ySetpoint = -6.5;
                 thetaSetpoint = 0;
                 targetSpeed = 12.5;
                 if(CombinedTurret.vPivotModifiedEncoder >= 2200){
-                    rotateSetpoint = 2000;
+                    rotateSetpoint = 460;
                 }
-                if(DirectionClass.distanceFromReturn() <= .5 && breakout == 1){
+                if(DirectionClass.distanceFromReturn() <= 1 && breakout == 1){
                     action = 2;
                     StopMotors();
                     startPointX = OdoClass.odoXReturn();
@@ -277,15 +265,14 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
                     breakout = 1;
                 }
             }
-            else if(action ==2){//spinning the carousel
+            else if(action ==2){//carousel placement
                if(loopcount == 1){
                    timepassed = getRuntime() + 4.5;
                    loopcount = 0;
                }
                if(timepassed >= getRuntime()){
-                   robot.TC_M.setPower(-.3);
-               }
-               else{
+                   robot.TC_M.setPower(.3);
+               }else{
                    nextMove = 1;
                }
                 if(nextMove == 1 && breakout == 1){
@@ -300,11 +287,8 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
                     breakout = 1;
                 }
             }
-            else if(action == 3){ //Move to Aliiance Hub dropping
-                if(CombinedTurret.vPivotModifiedEncoder > 800){
-                    rotateSetpoint = 450;
-                }
-
+            else if(action == 3){ //Move to Alliance Hub Placement
+                rotateSetpoint = -625;
                 if(TSEPos == 1){
                     VPivotSetpoint = 1000;
                 }
@@ -312,11 +296,11 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
                     VPivotSetpoint = 1200;
                 }
                 else if (TSEPos == 3){
-                    VPivotSetpoint = 1550;
+                    VPivotSetpoint = 1450;
                 }
                 targetSpeed = 20;
-               xSetpoint = 0;
-               ySetpoint = 19;
+               xSetpoint = 1.5;
+               ySetpoint = -16;
 
                 if(DirectionClass.distanceFromReturn() <= .5 && breakout == 1){
                     action = 4;
@@ -331,122 +315,105 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
                     breakout = 1;
                 }
             }
-            else if(action == 4){//extending to drop
-                if(CombinedTurret.vPivotModifiedEncoder > 800){
-                    rotateSetpoint = 450;
-                }
-                if(CombinedTurret.rotateModifiedEncoder > 100) {
+            else if(action == 4){
 
-                    if (TSEPos == 1) {
-                        if (CombinedTurret.vPivotModifiedEncoder >= 950 && CombinedTurret.vPivotModifiedEncoder <= 1050) {
-                            extendSetpoint = 800;
-                        }
-                    } else if (TSEPos == 2) {
-                        if (CombinedTurret.vPivotModifiedEncoder >= 1150 && CombinedTurret.vPivotModifiedEncoder <= 1250) {
-                            extendSetpoint = 800;
-                        }
-                    } else if (TSEPos == 3) {
-                        if (CombinedTurret.vPivotModifiedEncoder >= 1500 && CombinedTurret.vPivotModifiedEncoder <= 1600) {
-                            extendSetpoint = 800;
-                        }
+                if(TSEPos == 1) {
+                    if (CombinedTurret.vPivotModifiedEncoder >= 950 && CombinedTurret.vPivotModifiedEncoder <= 1050){
+                        extendSetpoint = 800;
                     }
                 }
+
+                else if(TSEPos == 2) {
+                if (CombinedTurret.vPivotModifiedEncoder >= 1150 && CombinedTurret.vPivotModifiedEncoder <= 1250) {
+                    extendSetpoint = 800;
+                }
+                }
+                else if (TSEPos == 3){
+                if (CombinedTurret.vPivotModifiedEncoder >= 1400 && CombinedTurret.vPivotModifiedEncoder <= 1500){
+                    extendSetpoint = 800;
+                }
+                }
                 if(CombinedTurret.extendModifiedEncoder >= 760){
-                    leftIntakeSet = -.4;
-                    rightIntakeSet = .4;
+                    leftIntakeSet = -.5;
+                    rightIntakeSet = .5;
                     if(loopcount == 0){
-                        timepassed = getRuntime() + 2.1;
+                        timepassed = getRuntime() + 3;
                         loopcount = 1;
                     }
                     if(timepassed <= getRuntime()){
                         nextMove = 1;
                     }
                 }
-                if(hasAction5){
-                    if(nextMove == 1){
-                        if(hasAction5){
-                            action = 6;
-                        }else{
-                            action = 5;
-                        }
-                        //action = 6;
+                if(robot.I_DS.getDistance(DistanceUnit.INCH) >= 1 || nextMove == 1){
 
-                        StopMotors();
-                        startPointX = OdoClass.odoXReturn();
-                        startPointY = OdoClass.odoYReturn();
-                        breakout = 0;
-                        loopcount = 0;
-                        nextMove = 0;
-                        leftIntakeSet = 0;
-                        rightIntakeSet = 0;
+                    if (hasAction5) {
+                        action = 6;
+                    } else {
+                        action = 5;
+                    }//action = 6;
+                    StopMotors();
+                    startPointX = OdoClass.odoXReturn();
+                    startPointY = OdoClass.odoYReturn();
+                    breakout = 0;
+                    loopcount = 0;
+                    nextMove = 0;
+                    leftIntakeSet = 0;
+                    rightIntakeSet = 0;
+                    OneLoop = true;
 
-                    }
-                }else {
-                    if (robot.I_DS.getDistance(DistanceUnit.INCH) >= 1.5 || nextMove == 1) {
-                        if (hasAction5) {
-                            action = 6;
-                        } else {
-                            action = 5;
-                        }
-                        //action = 6;
-
-                        StopMotors();
-                        startPointX = OdoClass.odoXReturn();
-                        startPointY = OdoClass.odoYReturn();
-                        breakout = 0;
-                        loopcount = 0;
-                        nextMove = 0;
-                        leftIntakeSet = 0;
-                        rightIntakeSet = 0;
-
-                    }
                 }
             }else if(action == 5){
-                if(Oneloop == false){
-                    Oneloop = true;
+                if(OneLoop){
+                    OneLoop = false;
                     extendSetpoint = 0;
                     CombinedTurret.trackingRotate = true;
                     rotateSpeed = 600;
                 }
                 hasAction5 = true;
+                TSEPos = 3;
 
                 rightIntakeSet = -0.5;
                 leftIntakeSet = 0.5;
 
-                if(CombinedTurret.rotateModifiedEncoder > -400) {
+                if(CombinedTurret.rotateModifiedEncoder < 400) {
 
                     VPivotSetpoint = 900;
                     if (CombinedTurret.vPivotModifiedEncoder > 800) {
-                        rotateSetpoint = -800;
+                        rotateSetpoint = 1000;
                     }
 
                 }else {
 
 
-                    if (CombinedTurret.rotateModifiedEncoder < -700) {
+                    if (CombinedTurret.rotateModifiedEncoder > 400) {
                         VPivotSetpoint = 450;
 
+                        if(CubePipline.targetX + (CubePipline.targetWidth / 2) > 0 && CombinedTurret.rotateModifiedEncoder > 500){
+                            if(Math.abs(CombinedTurret.rotateModifiedEncoder - rotateSetpoint) < 20){
+                                cubeLocationRotateEncoder = (.6555 * (CubePipline.targetX + (CubePipline.targetWidth / 2))) - 212;
+                                rotateSetpoint = rotateSetpoint + cubeLocationRotateEncoder;
+                            }
+                        }else{
+                            if(rotateSetpoint < 2300){
+                                if(Math.abs(CombinedTurret.rotateModifiedEncoder - rotateSetpoint) < 20){
+                                    cubeLocationRotateEncoder = 20;
+                                }
 
-                        if (Math.abs(rotateSetpoint-CombinedTurret.rotateModifiedEncoder) < 15 || CubePipline.targetX + (CubePipline.targetWidth / 2) > 0 && CombinedTurret.rotateModifiedEncoder < -800) {
-                            cubeLocationRotateEncoder = (.6555 * (CubePipline.targetX + (CubePipline.targetWidth / 2))) - 212;
 
-                        } else {
-                            if(rotateSetpoint > -2300){
-                                cubeLocationRotateEncoder = -7;
+                                rotateSetpoint = rotateSetpoint + cubeLocationRotateEncoder;
 
                             }else{
-                                rotateSetpoint = -500;
+                                rotateSetpoint = 400;
                             }
-
                         }
-                        rotateSetpoint = rotateSetpoint + cubeLocationRotateEncoder;
+
 
                     } else {
                         VPivotSetpoint = 900;
                     }
 
 
-                    if (rotateSetpoint > 0) {
+                    if (rotateSetpoint < 0) {
                         rotateSetpoint = 0;
                     }
 
@@ -457,36 +424,40 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
                     if (extendSetpoint > 800) {
                         extendSetpoint = 0;
                         VPivotSetpoint = 500;
-                        rotateSetpoint = -1900;
+
                     }
                     if (robot.I_DS.getDistance(DistanceUnit.INCH) < 1) {
                         action = 3;
+                        breakout = 0;
                         rotateSpeed = 2500;
                         extendSetpoint = 100;
+                        startPointX = OdoClass.odoXReturn();
+                        startPointY = OdoClass.odoYReturn();
+
                         CombinedTurret.trackingRotate = false;
 
                     }
                 }
 
 
-            } else if(action == 6){//going to park in the STORAGEUNIT
-                //setpoints for Shipping unit
-                xSetpoint = -18.5;
-                ySetpoint = 27;
+            }
+            else if(action == 6){//Shipping Unit
+
             targetSpeed = 15;
+            xSetpoint = -18.5;
 
-                VPivotSetpoint = 900;
-                if(VPivotSetpoint > 800){
-                    rotateSetpoint = 300;
-                    extendSetpoint = 0;
-                }
+            ySetpoint = -32;
+
+            VPivotSetpoint = 900;
+            if(CombinedTurret.vPivotModifiedEncoder > 800){
+                rotateSetpoint = 450;
+                extendSetpoint = 0;
+            }
 
 
-
-
-            if((DirectionClass.distanceFromReturn() <= .5 && breakout == 1) && CombinedTurret.rotateModifiedEncoder > 100){
-                //action = 6.5;//For WAREHOUSE
-                action = 8;//FOR Shipping UNIT
+            if((DirectionClass.distanceFromReturn() <= .5 && breakout == 1)){
+                //action = 6.5;
+                action = 8;
                 StopMotors();
                 startPointX = OdoClass.odoXReturn();
                 startPointY = OdoClass.odoYReturn();
@@ -496,26 +467,20 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
             }else{
                 breakout = 1;
             }
-        }else if(action == 6.5) {//Parking in the WAREHOUSE
-
+        }else if(action == 6.5){
                 if(getRuntime() - startTime > 20){
-
-                    //setpoints for Warehouse
                     xSetpoint = 40;
-                    ySetpoint = .5;
-                    targetSpeed = 30;
+                    ySetpoint = -2.5;
+                    targetSpeed = 25;
                 }
-
 
                 VPivotSetpoint = 900;
-                if(VPivotSetpoint > 800){
-                    rotateSetpoint = 300;
-                    extendSetpoint = 0;
+                if(CombinedTurret.vPivotModifiedEncoder > 800){
+                    rotateSetpoint = 50;
+                    extendSetpoint = 100;
                 }
 
-
-
-                if((DirectionClass.distanceFromReturn() <= .5 && breakout == 1) && CombinedTurret.rotateModifiedEncoder > 100){
+                if(breakout == 1 && DirectionClass.distanceFromReturn() < 1){
                     action = 6.75;
                     StopMotors();
                     startPointX = OdoClass.odoXReturn();
@@ -523,52 +488,73 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
                     breakout = 0;
                     loopcount = 0;
                     nextMove = 0;
-                    Oneloop = true;
+                    OneLoop = false;
                 }
                 if(xSetpoint > 20){
                     breakout = 1;
                 }
 
-            }else if(action == 6.75){
-                if(Oneloop == true){
-                    Oneloop = false;
+
+            }else if (action == 6.75){
+                if(OneLoop == false){
+                    OneLoop = true;
                     breakout = 0;
                 }
-                xSetpoint = 81;
-                ySetpoint = .5;
-                targetSpeed = 20;
+
+                if(getRuntime() - startTime > 20){
+                    xSetpoint = 81;
+                    ySetpoint = -3;
+                }
+                if(DirectionClass.y> 3 && DirectionClass .y > 0){
+                    ySetpoint = OdoClass.odoYReturn() -.5;
+                }
+
 
                 VPivotSetpoint = 900;
-                if(VPivotSetpoint > 800){
-                    rotateSetpoint = 300;
-                    extendSetpoint = 0;
+                if(CombinedTurret.vPivotModifiedEncoder > 800){
+                    rotateSetpoint = 50;
+                    extendSetpoint = 100;
                 }
 
-                if((DirectionClass.distanceFromReturn() <= .5 && breakout == 1) && CombinedTurret.rotateModifiedEncoder > 100){
+                if(breakout == 1 && DirectionClass.distanceFromReturn() < 1){
                     action = 8;
-                    StopMotors();
-                    startPointX = OdoClass.odoXReturn();
-                    startPointY = OdoClass.odoYReturn();
-                    breakout = 0;
-                    loopcount = 0;
-                    nextMove = 0;
-                }else{
-                    breakout = 1;
                 }
-            }
-            else{
-                stopProgram = 1;
+                    if(xSetpoint > 60){
+                        breakout = 1;
+                    }
+
             }
 
-            if(DirectionClass.distanceFromReturn() <= .75){
+
+
+            //If nothing else to do, stop the program
+            else {
+                stopProgram = 1;
+                StopMotors();
+            }
+            /*
+            if(action == 2 && lastAction != 2){
+                IntakeXSetpoint = 42 + intakeXSetMod;
+                intakeXSetMod = intakeXSetMod + 1.5;
+                YChangingSet = YChangingSet - 0;
+            }
+
+
+
+            lastAction = action;
+
+
+
+             */
+            if(DirectionClass.distanceFromReturn() <= .5 && TurnControl.thetaError < 7){
                 STOPMOTORS = true;
             }
             else{
                 STOPMOTORS = false;
             }
             //Runs all of our equations each loop cycle
-            VPivotSetpoint = CombinedTurret.VPivotLimits(extendSetpoint, VPivotSetpoint, rotateSetpoint, false, false);
             Movement(xSetpoint, ySetpoint, thetaSetpoint, targetSpeed, thetaTargetSpeed, thetaDeccelerationDegree, slowMoveSpeed, accelerationDistance, decelerationDistance, slowMovedDistance);
+            VPivotSetpoint = CombinedTurret.VPivotLimits(extendSetpoint, VPivotSetpoint, rotateSetpoint, false, false);
             CombinedTurret.TurretCombinedMethod(extendSetpoint,extendSpeed,rotateSetpoint,rotateSpeed, VPivotSetpoint,VPivotSpeed, robot.TE_M.getCurrentPosition(), robot.TE_G.getState(), robot.TR_M.getCurrentPosition(), robot.TR_G.getState(), robot.TP_M.getCurrentPosition(), robot.TP_G.getState());
 
             PowerSetting();
@@ -583,31 +569,36 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
     public void Telemetry() {
         //Displays telemetry
         telemetry.addData("Action", action);
-        telemetry.addData("time", getRuntime());
-        telemetry.addData("start Time", startTime);
-        telemetry.addData("time left", getRuntime() - startTime);
+        //telemetry.addData("time", getRuntime());
+        //telemetry.addData("start Time", startTime);
+        //telemetry.addData("time left", getRuntime() - startTime);
         telemetry.addData("Odo X", OdoClass.odoXReturn());
         telemetry.addData("Odo Y", OdoClass.odoYReturn());
-        telemetry.addData("Theta Angle", OdoClass.thetaInDegreesReturn());
-        telemetry.addData("X", DirectionClass.XReturn());
-        telemetry.addData("Y", DirectionClass.YReturn());
-        telemetry.addData("Theta", TurnControl.theta);
-        telemetry.addData("ThetaSpeedSetpoint", SpeedClass.thetaSpeedSetpoint());
-        telemetry.addData("SlowMoveSpeed", slowMoveSpeed);
-        telemetry.addData("slowMovedDistance", slowMovedDistance);
-        telemetry.addData("Distance", DirectionClass.distanceReturn());
+        //telemetry.addData("Theta Angle", OdoClass.thetaInDegreesReturn());
+        telemetry.addData("Direction X", DirectionClass.XReturn());
+        telemetry.addData("Driection Y", DirectionClass.YReturn());
+        //telemetry.addData("Theta", TurnControl.theta);
+        //telemetry.addData("ThetaSpeedSetpoint", SpeedClass.thetaSpeedSetpoint());
+        //telemetry.addData("SlowMoveSpeed", slowMoveSpeed);
+        ///telemetry.addData("slowMovedDistance", slowMovedDistance);
+        //telemetry.addData("Distance", DirectionClass.distanceReturn());
         telemetry.addData("Distance From", DirectionClass.distanceFromReturn());
-        telemetry.addData("Speed Setpoint", SpeedClass.speedSetpoint());
-        telemetry.addData("VPivot", CombinedTurret.vPivotModifiedEncoder);
-        telemetry.addData("Speed", SpeedClass.SpeedReturn());
+        //telemetry.addData("Speed Setpoint", SpeedClass.speedSetpoint());
+        telemetry.addData("VPivot mod Encoder", CombinedTurret.vPivotModifiedEncoder);
+        telemetry.addData("Rotate Mod Encoder", CombinedTurret.rotateModifiedEncoder);
+        telemetry.addData("extend mod Encoder", CombinedTurret.extendModifiedEncoder);
+        telemetry.addData("cubeLocationRotateEncoder", cubeLocationRotateEncoder);
+        telemetry.addData("rotate Set", rotateSetpoint);
+        //telemetry.addData("Speed", SpeedClass.SpeedReturn());
 
-        telemetry.addData("Distance Delta", SpeedClass.DistanceDelta());
-        telemetry.addData("XSetpoint", DirectionClass.XSetpointReturn());
-        telemetry.addData("YSetpoint", DirectionClass.YSetpointReturn());
-        telemetry.addData("LF_Power", robot.LF_M.getPower());
-        telemetry.addData("RF_Power", robot.RF_M.getPower());
-        telemetry.addData("LF_Direction", DirectionClass.LF_M_DirectionReturn());
-        telemetry.addData("Motor Power Ratio", DirectionClass.motorPowerRatioReturn());
+        //telemetry.addData("Distance Delta", SpeedClass.DistanceDelta());
+        //telemetry.addData("XSetpoint", DirectionClass.XSetpointReturn());
+        //telemetry.addData("YSetpoint", DirectionClass.YSetpointReturn());
+        //telemetry.addData("LF_Power", robot.LF_M.getPower());
+        //telemetry.addData("RF_Power", robot.RF_M.getPower());
+        //telemetry.addData("LF_Direction", DirectionClass.LF_M_DirectionReturn());
+        //telemetry.addData("Motor Power Ratio", DirectionClass.motorPowerRatioReturn());
+        //telemetry.addData("direction Y", DirectionClass.y);
 
        // telemetry.addData("PT", robot.TP_P.getVoltage());
 
@@ -735,22 +726,24 @@ public class BlueCarouselWithDUCK extends LinearOpMode {
 
             yLowest = -640;
             indexLowest = 0;
-            Imgproc.rectangle(input, new Point(100, 225), new Point(210,375), AQUA);
-            Imgproc.rectangle(input, new Point(210, 225), new Point(340, 375), PARAKEET);
-            Imgproc.rectangle(input, new Point(340, 225), new Point(480, 375), GOLD);
+            Imgproc.rectangle(input, new Point(260, 200), new Point(390,350), AQUA);
+            Imgproc.rectangle(input, new Point(390, 200), new Point(500, 350), PARAKEET);
+            Imgproc.rectangle(input, new Point(500, 200), new Point(630, 350), GOLD);
+
             TSELocation = 0;
             if (redContours.size() > 0) {
                 for (int i = 0; i < redContours.size(); i++) {
                     if (filterContours(redContours.get(i))) {
                         redMask = Imgproc.boundingRect(redContours.get(i));
                         Imgproc.rectangle(input, redMask, AQUA, 10);
-                        if(TSELocation == 0 || TSELocation == 1) {
-                            if (redMask.y + redMask.height > 200 && redMask.y + redMask.height < 400) {
-                                if (redMask.x + (redMask.width / 2) > 340 && redMask.x + (redMask.width / 2) < 480) {
+                        if(TSELocation == 0 || TSELocation == 3) {
+                            if (redMask.y + redMask.height > 150 && redMask.y + redMask.height < 400) {
+
+                                if (redMask.x + (redMask.width / 2) > 500 && redMask.x + (redMask.width / 2) < 630) {
                                     TSELocation = 3;
-                                } else if (redMask.x + (redMask.width / 2) > 210 && redMask.x + (redMask.width / 2) < 340) {
+                                } else if (redMask.x + (redMask.width / 2) > 390 && redMask.x + (redMask.width / 2) < 500) {
                                     TSELocation = 2;
-                                } else if (redMask.x + (redMask.width / 2) > 100 && redMask.x + (redMask.width / 2) < 21) {
+                                } else if (redMask.x + (redMask.width / 2) > 260 && redMask.x + (redMask.width / 2) < 390) {
                                     TSELocation = 1;
                                 }
                             }

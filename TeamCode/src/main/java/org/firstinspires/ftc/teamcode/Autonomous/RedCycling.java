@@ -601,7 +601,7 @@ OpenCvCamera TurretCam2;
 
             }else if(action == 4){//Decision to drop freight or to stop
                 timeRemaining = 30 - (getRuntime() - startTime);
-                if(timeRemaining > 2){
+                if(timeRemaining > 4){
                     action = 5;
                 }else{
                     action = 6;

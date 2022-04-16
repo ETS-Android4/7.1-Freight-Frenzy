@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 @Config
 @Autonomous
-public class NEWBlueCarouselAuto extends LinearOpMode {
+public class ZZZBlueCarouselAuto extends LinearOpMode {
     FreightFrenzyHardwareMap robot = new FreightFrenzyHardwareMap();
     SpeedClass SpeedClass = new SpeedClass();
     DirectionCalcClass DirectionClass = new DirectionCalcClass();
