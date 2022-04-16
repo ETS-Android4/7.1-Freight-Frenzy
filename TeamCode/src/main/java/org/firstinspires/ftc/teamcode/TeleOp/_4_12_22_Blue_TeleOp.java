@@ -86,103 +86,56 @@ public class _4_12_22_Blue_TeleOp extends LinearOpMode{
                 robot.LI_S.setPower(0);
             }
 
-                                //turret Presets
-                if(gamepad2.y || gamepad1.y){//Resetting our intake position in case of any encoder drift
-                    intakeVPivotSet = CombinedTurret.vPivotModifiedEncoder;
-                    intakeExtendSet = CombinedTurret.extendModifiedEncoder;
-                    intakeRotateSet = CombinedTurret.rotateModifiedEncoder;
+            //turret Presets
+            if(gamepad2.y || gamepad1.y){//Resetting our intake position in case of any encoder drift
+                intakeVPivotSet = CombinedTurret.vPivotModifiedEncoder;
+                intakeExtendSet = CombinedTurret.extendModifiedEncoder;
+                intakeRotateSet = CombinedTurret.rotateModifiedEncoder;
 
-                }else if(gamepad2.left_bumper){
-                    if(gamepad2.dpad_down){
-                        teleOpExtendSpeedSet = 25;
-                        teleOpRotateSpeedSet = 2500;
-                        teleOpVPivotSpeedSet = 18;
-                        teleOpVPivotSet = 900;
-                        if(CombinedTurret.vPivotModifiedEncoder > 800){
-                            teleOpRotateSet = intakeRotateSet;
-                            teleOpExtendSet = intakeExtendSet;
-                        }
-                        if(Math.abs(teleOpRotateSet - CombinedTurret.rotateModifiedEncoder) < 100 && Math.abs(teleOpExtendSet - CombinedTurret.extendModifiedEncoder) < 100){
-                            teleOpVPivotSet = 820;
-                        }
-                    }else if(gamepad2.dpad_up){
-                        teleOpVPivotSpeedSet = 10;
-                        teleOpRotateSpeedSet = 1000;
-                        teleOpExtendSpeedSet = 25;
-                        teleOpVPivotSet = 2000;
-                        if(CombinedTurret.vPivotModifiedEncoder > 900){
-                            teleOpExtendSet = 300;
-                        }
-
-                    }else{
-                        teleOpVPivotSpeedSet = 10;
-                        teleOpRotateSpeedSet = 1000;
-                        teleOpExtendSpeedSet = 25;
-                        teleOpExtendSet = teleOpExtendSet - Smoothing.SmoothExtend(gamepad2.right_stick_y * 30);
-
-                        rotateChange = Smoothing.SmoothRotate(gamepad2.right_trigger * 25);
-                        //rotateChange = gamepad2.right_trigger * 40;
-                        //rotateChangeLeft = gamepad2.left_trigger * -40;
-
-                        rotateChangeLeft = Smoothing.SmoothRotateLeft(gamepad2.left_trigger * -25);
-
-                        teleOpRotateSet = teleOpRotateSet + rotateChange + rotateChangeLeft;
-
-                        teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -20);
+            }else if(gamepad2.left_bumper){
+                if(gamepad2.dpad_down){
+                    teleOpExtendSpeedSet = 25;
+                    teleOpRotateSpeedSet = 2500;
+                    teleOpVPivotSpeedSet = 18;
+                    teleOpVPivotSet = 900;
+                    if(CombinedTurret.vPivotModifiedEncoder > 800){
+                        teleOpRotateSet = intakeRotateSet;
+                        teleOpExtendSet = intakeExtendSet;
+                    }
+                    if(Math.abs(teleOpRotateSet - CombinedTurret.rotateModifiedEncoder) < 100 && Math.abs(teleOpExtendSet - CombinedTurret.extendModifiedEncoder) < 100){
+                        teleOpVPivotSet = 820;
+                    }
+                }else if(gamepad2.dpad_up){
+                    teleOpVPivotSpeedSet = 10;
+                    teleOpRotateSpeedSet = 1000;
+                    teleOpExtendSpeedSet = 25;
+                    teleOpVPivotSet = 2000;
+                    if(CombinedTurret.vPivotModifiedEncoder > 900){
+                        teleOpExtendSet = 300;
                     }
 
-                }else if(gamepad2.right_bumper){
-                    if(gamepad2.dpad_down){
-                        if (Math.abs(intakeRotateSet - CombinedTurret.rotateModifiedEncoder) < 150 && Math.abs(intakeExtendSet - CombinedTurret.extendModifiedEncoder) < 100) {
-                            teleOpVPivotSet = intakeVPivotSet;
-                        }else{
-                            if (CombinedTurret.vPivotModifiedEncoder > 800) {
-                                if(Math.abs(intakeExtendSet - CombinedTurret.extendModifiedEncoder) < 800){
-                                    teleOpRotateSet = intakeRotateSet;
-                                }
-                                teleOpExtendSet = intakeExtendSet;
+                }else{
+                    teleOpVPivotSpeedSet = 10;
+                    teleOpRotateSpeedSet = 1000;
+                    teleOpExtendSpeedSet = 25;
+                    teleOpExtendSet = teleOpExtendSet - Smoothing.SmoothExtend(gamepad2.right_stick_y * 30);
 
-                            }else{
-                                teleOpVPivotSet = 900;
-                            }
-                        }
-                    }else if(gamepad2.dpad_left){
-                        teleOpVPivotSet = 700;
-                        if (CombinedTurret.vPivotModifiedEncoder > 600) {
-                            teleOpRotateSet = intakeRotateSet -1700;
-                            teleOpExtendSet = -40;
-                        }
-                    }else if(gamepad2.dpad_right){
-                        teleOpVPivotSet = 800;
-                        if(CombinedTurret.vPivotModifiedEncoder > 700){
-                            teleOpRotateSet = intakeRotateSet - 630;
-                            teleOpExtendSet = 85;
-                        }
-                    }else{
-                        teleOpVPivotSpeedSet = 10;
-                        teleOpRotateSpeedSet = 1000;
-                        teleOpExtendSpeedSet = 25;
-                        teleOpExtendSet = teleOpExtendSet - Smoothing.SmoothExtend(gamepad2.right_stick_y * 30);
+                    rotateChange = Smoothing.SmoothRotate(gamepad2.right_trigger * 25);
+                    //rotateChange = gamepad2.right_trigger * 40;
+                    //rotateChangeLeft = gamepad2.left_trigger * -40;
 
-                        rotateChange = Smoothing.SmoothRotate(gamepad2.right_trigger * 25);
-                        //rotateChange = gamepad2.right_trigger * 40;
-                        //rotateChangeLeft = gamepad2.left_trigger * -40;
+                    rotateChangeLeft = Smoothing.SmoothRotateLeft(gamepad2.left_trigger * -25);
 
-                        rotateChangeLeft = Smoothing.SmoothRotateLeft(gamepad2.left_trigger * -25);
+                    teleOpRotateSet = teleOpRotateSet + rotateChange + rotateChangeLeft;
 
-                        teleOpRotateSet = teleOpRotateSet + rotateChange + rotateChangeLeft;
+                    teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -20);
+                }
 
-                        teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -20);
-                    }
-                }else if(gamepad1.dpad_right) {//Alliance hub dropping preset
-                    teleOpVPivotSet = 1600;
-                    if (CombinedTurret.vPivotModifiedEncoder > 1000) {
-                        teleOpRotateSet = intakeRotateSet + 1440;
-                        if(CombinedTurret.rotateModifiedEncoder > 800) {
-                            teleOpExtendSet = 950;
-                        }
-                    }
-                }else if(gamepad2.dpad_down || gamepad1.dpad_down) {//Intake position
+            }else if(gamepad2.right_bumper){
+                if(gamepad2.dpad_down){
+                    teleOpVPivotSpeedSet = 12;
+                    teleOpRotateSpeedSet = 2000;
+                    teleOpExtendSpeedSet = 35;
                     if (Math.abs(intakeRotateSet - CombinedTurret.rotateModifiedEncoder) < 150 && Math.abs(intakeExtendSet - CombinedTurret.extendModifiedEncoder) < 100) {
                         teleOpVPivotSet = intakeVPivotSet;
                     }else{
@@ -196,37 +149,108 @@ public class _4_12_22_Blue_TeleOp extends LinearOpMode{
                             teleOpVPivotSet = 900;
                         }
                     }
-
-                }else if(gamepad1.dpad_left){//Shared shipping hub intake position
+                }else if(gamepad2.dpad_left){
+                    teleOpVPivotSpeedSet = 12;
+                    teleOpRotateSpeedSet = 2000;
+                    teleOpExtendSpeedSet = 35;
                     teleOpVPivotSet = 700;
                     if (CombinedTurret.vPivotModifiedEncoder > 600) {
                         teleOpRotateSet = intakeRotateSet -1700;
                         teleOpExtendSet = -40;
                     }
-
-                }else if(gamepad2.dpad_up || gamepad1.dpad_up){//Mid alliance hub scoring position
-                    teleOpVPivotSet = 1260;
-                    if (CombinedTurret.vPivotModifiedEncoder > 1000) {
-                        teleOpRotateSet = intakeRotateSet + 1400;
-                        if(CombinedTurret.rotateModifiedEncoder > 800) {
-                            teleOpExtendSet = 800;
-                        }
+                }else if(gamepad2.dpad_right){
+                    teleOpVPivotSpeedSet = 12;
+                    teleOpRotateSpeedSet = 2000;
+                    teleOpExtendSpeedSet = 35;
+                    teleOpVPivotSet = 800;
+                    if(CombinedTurret.vPivotModifiedEncoder > 700){
+                        teleOpRotateSet = intakeRotateSet - 630;
+                        teleOpExtendSet = 85;
                     }
+                }else{
+                    teleOpVPivotSpeedSet = 12;
+                    teleOpRotateSpeedSet = 2000;
+                    teleOpExtendSpeedSet = 35;
+                    teleOpExtendSet = teleOpExtendSet - Smoothing.SmoothExtend(gamepad2.right_stick_y * 30);
 
-                } else{//manual turret position setting
-                    teleOpExtendSet = teleOpExtendSet - Smoothing.SmoothExtend(gamepad2.right_stick_y * 45);
-
-                    rotateChange = Smoothing.SmoothRotate(gamepad2.right_trigger * 40);
+                    rotateChange = Smoothing.SmoothRotate(gamepad2.right_trigger * 25);
                     //rotateChange = gamepad2.right_trigger * 40;
                     //rotateChangeLeft = gamepad2.left_trigger * -40;
 
-                    rotateChangeLeft = Smoothing.SmoothRotateLeft(gamepad2.left_trigger * -40);
+                    rotateChangeLeft = Smoothing.SmoothRotateLeft(gamepad2.left_trigger * -25);
 
                     teleOpRotateSet = teleOpRotateSet + rotateChange + rotateChangeLeft;
 
-                    teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -30);
-
+                    teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -20);
                 }
+            }else if(gamepad1.dpad_right || gamepad2.dpad_right) {//Alliance hub dropping preset
+                teleOpVPivotSpeedSet = 12;
+                teleOpRotateSpeedSet = 2000;
+                teleOpExtendSpeedSet = 35;
+                teleOpVPivotSet = 1600;
+                if (CombinedTurret.vPivotModifiedEncoder > 1000) {
+                    teleOpRotateSet = intakeRotateSet + 1440;
+                    if(CombinedTurret.rotateModifiedEncoder > 800) {
+                        teleOpExtendSet = 950;
+                    }
+                }
+            }else if(gamepad2.dpad_down || gamepad1.dpad_down) {//Intake position
+                teleOpVPivotSpeedSet = 12;
+                teleOpRotateSpeedSet = 2000;
+                teleOpExtendSpeedSet = 35;
+                if (Math.abs(intakeRotateSet - CombinedTurret.rotateModifiedEncoder) < 300 && Math.abs(intakeExtendSet - CombinedTurret.extendModifiedEncoder) < 100) {
+                    teleOpVPivotSet = intakeVPivotSet;
+                }else{
+                    if (CombinedTurret.vPivotModifiedEncoder > 800) {
+                        if(Math.abs(intakeExtendSet - CombinedTurret.extendModifiedEncoder) < 800){
+                            teleOpRotateSet = intakeRotateSet;
+                        }
+                        teleOpExtendSet = intakeExtendSet;
+
+                    }else{
+                        teleOpVPivotSet = 900;
+                    }
+                }
+
+            }else if(gamepad1.dpad_left){//Shared shipping hub intake position
+                teleOpVPivotSpeedSet = 12;
+                teleOpRotateSpeedSet = 2000;
+                teleOpExtendSpeedSet = 35;
+                teleOpVPivotSet = 700;
+                if (CombinedTurret.vPivotModifiedEncoder > 600) {
+                    teleOpRotateSet = intakeRotateSet -1700;
+                    teleOpExtendSet = -40;
+                }
+
+            }else if(gamepad2.dpad_up || gamepad1.dpad_up){//Mid alliance hub scoring position
+                teleOpVPivotSpeedSet = 12;
+                teleOpRotateSpeedSet = 2000;
+                teleOpExtendSpeedSet = 35;
+                teleOpVPivotSet = 1260;
+                if (CombinedTurret.vPivotModifiedEncoder > 1000) {
+                    teleOpRotateSet = intakeRotateSet + 1400;
+                    if(CombinedTurret.rotateModifiedEncoder > 800) {
+                        teleOpExtendSet = 800;
+                    }
+                }
+
+            } else{//manual turret position setting
+                teleOpVPivotSpeedSet = 12;
+                teleOpRotateSpeedSet = 2000;
+                teleOpExtendSpeedSet = 35;
+                teleOpExtendSet = teleOpExtendSet - Smoothing.SmoothExtend(gamepad2.right_stick_y * 45);
+
+                rotateChange = Smoothing.SmoothRotate(gamepad2.right_trigger * 40);
+                //rotateChange = gamepad2.right_trigger * 40;
+                //rotateChangeLeft = gamepad2.left_trigger * -40;
+
+                rotateChangeLeft = Smoothing.SmoothRotateLeft(gamepad2.left_trigger * -40);
+
+                teleOpRotateSet = teleOpRotateSet + rotateChange + rotateChangeLeft;
+
+                teleOpVPivotSet = teleOpVPivotSet + (gamepad2.left_stick_y * -30);
+
+            }
             if(gamepad1.right_trigger > .05) {//carousel stuff
                 teleOpVPivotSet = 2550;
                 if(CombinedTurret.vPivotModifiedEncoder > 800){
@@ -309,14 +333,14 @@ public class _4_12_22_Blue_TeleOp extends LinearOpMode{
     }
     public void Telemetry(){
 
-      //  dashboardTelemetry.addData("vPivotMotor Power", CombinedTurret.vPivotFinalMotorPower);
+        //  dashboardTelemetry.addData("vPivotMotor Power", CombinedTurret.vPivotFinalMotorPower);
         dashboardTelemetry.addData("vPivot Modified Encoder", CombinedTurret.vPivotModifiedEncoder);
         dashboardTelemetry.addData("Rotate Modified Encoder", CombinedTurret.rotateModifiedEncoder);
-      //  dashboardTelemetry.addData("extend Motor Power", CombinedTurret.extendFinalMotorPower);
-      //  dashboardTelemetry.addData("extend speed", CombinedTurret.extendSpeed);
+        //  dashboardTelemetry.addData("extend Motor Power", CombinedTurret.extendFinalMotorPower);
+        //  dashboardTelemetry.addData("extend speed", CombinedTurret.extendSpeed);
         dashboardTelemetry.addData("extend Modified Encoder", CombinedTurret.extendModifiedEncoder);
-      //  dashboardTelemetry.addData("extend Set", CombinedTurret.extendSet);
-      //  dashboardTelemetry.addData("turret Homing trigger", CombinedTurret.turretHomingTrigger);
+        //  dashboardTelemetry.addData("extend Set", CombinedTurret.extendSet);
+        //  dashboardTelemetry.addData("turret Homing trigger", CombinedTurret.turretHomingTrigger);
 
         //telemetry.addData("intake Dist", robot.I_DS.getDistance(DistanceUnit.INCH));
         //telemetry.addData("rotate set", CombinedTurret.rotateSet);
