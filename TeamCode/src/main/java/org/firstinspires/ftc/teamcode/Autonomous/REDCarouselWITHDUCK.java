@@ -119,7 +119,7 @@ boolean TSECamOpened = false, TurretCamOpened = false;
         pipeline = new OpenCV_Pipeline();
         CubePipline = new CubeTracking_Pipeline();
 
-        LeftCam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+       /* LeftCam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             //starts the webcam and defines the pixels
             public void onOpened() {
@@ -146,8 +146,8 @@ boolean TSECamOpened = false, TurretCamOpened = false;
                 /*
                  * This will be called if the camera could not be opened
 `               */
-            }
-        });
+     //       }
+     //   });
 
         TurretCam2.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
@@ -160,7 +160,7 @@ boolean TSECamOpened = false, TurretCamOpened = false;
 
                 TurretCam2.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
                 //gives FTC dashboard acess to the camera
-                //FtcDashboard.getInstance().startCameraStream(TurretCam2, 10);
+                FtcDashboard.getInstance().startCameraStream(TurretCam2, 10);
                 telemetry.addData("TURRETCameraOpened", "");
                 telemetry.update();
 
